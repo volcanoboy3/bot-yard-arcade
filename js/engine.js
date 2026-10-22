@@ -58,16 +58,14 @@
   };
 
   // ---------- the player's bot ----------
-  const PLAYER_DEFAULT = { name: 'BOLT-7', body: '#5ad1e6', eye: '#bff6ff', head: 'box', antenna: 'ball', base: 'wheels' };
-  Arcade.player = Object.assign({}, PLAYER_DEFAULT, store.get('player', null) || {});
-  Arcade.setPlayer = patch => {
-    Object.assign(Arcade.player, patch);
-    store.set('player', Arcade.player);
-    emit('player', Arcade.player);
-  };
+  const legacyPlayer = store.get('player', null);
+  let player = Object.freeze(Object.assign({}, BeeWardrobe.defaults));
+  Object.defineProperty(Arcade, 'player', { get: () => player });
+  let coinController = null;
+  const inputGuard = new BeeWardrobe.InputGuard();
 
   // ---------- scores and play counts ----------
-  Arcade.best = id => Number(store.get('best:' + id, 0)) || 0;
+  Arcade.best = id => { const n=Number(store.get('best:' + id,0));return Number.isFinite(n)&&n>=0&&(id==='robot-factory'||n<=1e12)?n:0; };
   function recordBest(id, score) {
     score = Math.round(Number(score) || 0);
     if (score > 0 && score > Arcade.best(id)) { store.set('best:' + id, score); emit('best', { id, score }); return true; }
@@ -163,7 +161,7 @@
   const ui = {
     hub: $('hub'), play: $('play'), stage: $('stage'), wrap: $('stage-wrap'),
     title: $('play-title'), cat: $('play-cat'), score: $('play-score'), best: $('play-best'), stats: $('play-stats'),
-    pause: $('play-pause'), restart: $('play-restart'), sound: $('play-sound'), back: $('play-back'),
+    coinLabel: $('coin-reward-label'), pause: $('play-pause'), restart: $('play-restart'), sound: $('play-sound'), back: $('play-back'),
     card: $('play-card'), how: $('play-how'), pad: $('play-pad'), toast: $('play-toast')
   };
   const touchQuery = window.matchMedia ? window.matchMedia('(hover: none) and (pointer: coarse)') : { matches: false };
@@ -504,6 +502,9 @@
     session.last = now;
     if (session.state !== 'play' && session.state !== 'over') return;
     session.time += dt;
+    const rewardBlocked = performance.now() < Math.max(inputGuard.blockedUntil, session.rewardHold || 0);
+    if (ui.coinLabel) { ui.coinLabel.textContent = rewardBlocked ? 'Coins paused' : 'Bee coins'; ui.coinLabel.title = rewardBlocked ? 'Unusual input or score detected. Rewards resume shortly.' : 'Play actively to receive random bee deliveries.'; }
+    if (coinController) coinController.advance(dt, session.state === 'play' && inputGuard.active(performance.now()) && performance.now() >= (session.rewardHold || 0));
     // timers run on the game clock, so pausing freezes them too
     for (let i = 0; i < session.timers.length && session.alive; i++) {
       const tm = session.timers[i];
@@ -516,6 +517,14 @@
       if (!session.alive || session.state === 'error') return;
       session.safe(() => fn(dt, session.time));
     }
+  }
+
+  function fairScore(session,value) {
+    if (BeeWardrobe.plausibleScore(session.def.id, Number(value), session.time)) return true;
+    const now=performance.now();
+    if(now >= (session.rewardHold || 0)) toast('Unusual score ignored. Coin rewards pause for 30 seconds.', {color:'#ffe084',ms:3500});
+    session.rewardHold=now+30000;
+    return false;
   }
 
   function makeApi(session) {
@@ -588,6 +597,7 @@
 
       score(n) {
         if (session.state !== 'play' || session !== S) return;
+        if (!fairScore(session,n)) return;
         session.score = Math.round(Number(n) || 0);
         ui.score.textContent = fmt(session.score);
       },
@@ -603,6 +613,7 @@
       },
       toast(text, o) { if (session === S) toast(text, o); },
       record(n) {
+        if (!fairScore(session,n)) return false;
         const isNew = recordBest(def.id, n);
         if (isNew && session === S) { ui.best.textContent = fmt(Arcade.best(def.id)); ui.best.parentElement.classList.add('is-new'); }
         return isNew;
@@ -618,7 +629,7 @@
   function end(session, won, o) {
     if (session !== S || session.state !== 'play') return;
     session.state = 'over';
-    const score = o.score != null ? Math.round(Number(o.score) || 0) : session.score;
+    const score = o.score != null && fairScore(session,o.score) ? Math.round(Number(o.score) || 0) : session.score;
     session.score = score;
     ui.score.textContent = fmt(score);
     const isBest = recordBest(session.def.id, score);
@@ -758,6 +769,40 @@
   window.addEventListener('hashchange', route);
   window.addEventListener('popstate', route);
   Arcade.route = route;
+
+  coinController = createBeeWallet(legacyPlayer, state => {
+    if (state.ready && !state.problem) {
+      const next = Object.assign({}, state.player);
+      if (next.paintPixels) next.paintPixels = Object.freeze(next.paintPixels.slice());
+      player = Object.freeze(next);
+      store.set('player', player);
+      emit('player', player);
+    }
+    document.querySelectorAll('[data-coin-balance]').forEach(node => { node.textContent = state.problem ? '!' : (state.ready ? fmt(state.balance) : '…'); });
+    emit('wallet', state);
+  }, amount => { if (S && S.state === 'play') { toast('Bee delivery! +' + amount + ' coins', { color: '#ffe084', ms: 2400 }); Sound.sfx('coin'); } });
+  Object.defineProperty(Arcade,'wardrobe',{value:Object.freeze(coinController.shop)});
+
+  // Ignore script-dispatched gameplay input and briefly suspend implausible tap streams.
+  // No permanent bans or loss of legitimately earned coins.
+  for (const type of ['pointerdown', 'click', 'keydown', 'input']) document.addEventListener(type, e => {
+    if (!S || S.state !== 'play') return;
+    const inGame = ui.stage.contains(e.target) || ui.pad.contains(e.target);
+    if (!inGame) return;
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && type !== 'keydown') return;
+    const now = performance.now();
+    const okay = e.isTrusted && (type === 'click' ? now >= inputGuard.blockedUntil : inputGuard.input(type, now, true, !!e.repeat || type === 'input'));
+    if (!okay) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (now < inputGuard.blockedUntil) {
+        S.codes.clear(); S.touchHeld.clear(); refreshKeys();
+        toast('Very fast or automated input detected. Rewards pause for 30 seconds.', { color: '#ffe084', ms: 3500 });
+      }
+    }
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (S && S.state === 'play' && e.isTrusted && ui.stage.contains(e.target)) inputGuard.input('move', performance.now(), true, false, {x:e.clientX,y:e.clientY});
+  }, true);
 
   // ---------- test hook: ?dev=<id>&mode=<mode> opens a game and starts it at once ----------
   Arcade.debug = {

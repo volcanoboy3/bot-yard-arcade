@@ -196,7 +196,7 @@
   function paintBattery(c, x, y, t) {
     c.fillStyle = 'rgba(124,240,138,0.16)'; K.circle(c, x, y, 23 + Math.sin(t * 5) * 2);
     K.ring(c, x, y, 19, 1.5, 'rgba(124,240,138,0.45)');
-    K.battery(c, x, y, 18, 30, 1, C.good);
+    K.drawHive(c, x, y, 34);
   }
   function paintMoveSign(c, x, y, t) {
     c.fillStyle = 'rgba(11,20,27,0.85)'; K.rr(c, x - 15, y - 9, 30, 18, 4);
@@ -230,13 +230,13 @@
 
   Arcade.register({
     id: 'flappy-drone',
-    title: 'Flappy Drone',
+    title: 'Flappy Bee Drone',
     cat: 'action',
-    blurb: 'Fire your jets and fly through the factory stacks.',
+    blurb: 'Fly your robot through the stacks and collect honey power.',
     rules: [
       'Each tap fires your jets. Gravity pulls you back down.',
       'Fly through the gaps between the stacks: 1 point per gate.',
-      'Batteries floating in the gaps are worth 3 more.',
+      'Honey cells floating in the gaps are worth 3 more.',
       'Gaps get tighter and some start to move. Touch nothing!'
     ],
     how: 'Tap, click, Space, W or ↑ to fire your jets',

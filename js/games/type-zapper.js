@@ -49,6 +49,7 @@
     c.beginPath(); c.ellipse(x, y - s * 0.54, bw, 3, 0, 0, Math.PI * 2); c.fill();
     c.fillStyle = C.steel; K.circle(c, x, y - s * 0.54, 3.2);
     K.drawBot(c, x, y, s, { body: d.color, eye: '#ff4d4d', head: d.head, antenna: 'none', base: 'hover', mood: 'angry', arms: 'none', t: t + d.ph });
+    K.drawBee(c,x+s*.42,y+s*.18,s*.35,t);
   }
 
   /** The word banner a drone carries. Typed letters glow green. */
@@ -156,9 +157,9 @@
 
   Arcade.register({
     id: 'type-zapper',
-    title: 'Type Zapper',
+    title: 'Bee Signal Zapper',
     cat: 'brain',
-    blurb: 'Type the words to zap the drones before they land.',
+    blurb: 'Type the drone signals to protect the robot apiary.',
     rules: [
       'Rogue drones float down carrying words. Type a word to zap its drone.',
       'Your first letter locks on to the closest matching drone. Backspace lets go.',

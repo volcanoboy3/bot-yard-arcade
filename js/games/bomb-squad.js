@@ -77,6 +77,7 @@
     if (k < 1) c.scale(k, k);
     flagShape(c, s, t, seed, '#d7e2e8', C.hazard);
     c.fillStyle = C.safety; K.circle(c, s * 0.12, -s * 0.2, s * 0.035);
+    K.drawBee(c,s*.2,-s*.2,s*.27,t);
     c.restore();
   }
   function shovel(c, x, y, s, col) {
@@ -102,9 +103,9 @@
 
   Arcade.register({
     id: 'bomb-squad',
-    title: 'Bomb Squad',
+    title: 'Bee Rescue Squad',
     cat: 'puzzle',
-    blurb: 'Read the numbers, flag the bombs, clear the field.',
+    blurb: 'Keep the hive safe: find the dangerous cells without setting one off.',
     rules: [
       'Open every safe tile. A number tells how many bombs touch that tile.',
       'Flag bombs with a right-click, by holding a tile, or in Flag mode.',

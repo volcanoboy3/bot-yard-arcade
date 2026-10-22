@@ -56,6 +56,7 @@
     c.beginPath(); c.ellipse(-5, -9, 4.5, 2.2, -0.5, 0, Math.PI * 2); c.fill();
     c.fillStyle = C.dark; K.rr(c, -9.5, -6.5, 19, 7.5, 3.7);
     c.fillStyle = EYE; K.circle(c, -4, -2.8, 2.1); K.circle(c, 4, -2.8, 2.1);
+    K.drawBee(c,0,0,18,0);
   }
 
   function drawCrab(c, f, col) {
@@ -86,6 +87,7 @@
     c.fillStyle = 'rgba(0,0,0,0.2)'; K.rr(c, -12, 3, 24, 5, [0, 0, 6, 6]);
     c.fillStyle = C.dark; K.rr(c, -6, -1, 12, 4.5, 2);
     c.fillStyle = dark; c.fillRect(-2.8, -1, 1.3, 4.5); c.fillRect(1.5, -1, 1.3, 4.5);
+    K.drawBee(c,0,0,18,0);
   }
 
   function drawCyclops(c, f, col) {
@@ -108,6 +110,7 @@
     c.fillStyle = '#ff4d4d'; K.circle(c, f ? -1.6 : 1.6, -1, 3.3);
     c.fillStyle = C.dark; K.circle(c, f ? -1.6 : 1.6, -1, 1.6);
     c.fillStyle = 'rgba(255,255,255,0.85)'; K.circle(c, -2.6, -3.6, 1.2);
+    K.drawBee(c,0,0,18,0);
   }
 
   function drawWalker(c, f, col) {
@@ -128,6 +131,7 @@
     c.fillStyle = C.dark;
     c.beginPath(); c.moveTo(-7, -7.2); c.lineTo(-1.5, -7.2); c.lineTo(-1.5, -5); c.closePath(); c.fill();
     c.beginPath(); c.moveTo(7, -7.2); c.lineTo(1.5, -7.2); c.lineTo(1.5, -5); c.closePath(); c.fill();
+    K.drawBee(c,0,0,18,0);
   }
 
   function drawDrone(c, f, col) {
@@ -146,6 +150,7 @@
     c.fillStyle = C.dark; K.rr(c, -8, -3.5, 16, 6, 3);
     c.fillStyle = 'rgba(255,77,77,0.35)'; K.circle(c, f ? -3 : 3, -0.5, 4);
     c.fillStyle = '#ff4d4d'; K.circle(c, f ? -3 : 3, -0.5, 2.3);
+    K.drawBee(c,0,0,18,0);
   }
 
   function drawMother(c, f) {
@@ -170,6 +175,7 @@
       K.circle(c, -28 + i * 8, 5, 2.2);
     }
     c.fillStyle = C.steelDark; K.rr(c, -24, 11, 10, 4, 2); K.rr(c, 14, 11, 10, 4, 2);
+    K.drawBee(c,0,0,18,0);
   }
 
   // the player's arm cannon, barrel pointing up from the claw at x,y
@@ -262,9 +268,9 @@
 
   Arcade.register({
     id: 'bot-invaders',
-    title: 'Bot Invaders',
+    title: 'Hive Defenders',
     cat: 'action',
-    blurb: 'Blast the robot invaders before they reach your bay.',
+    blurb: 'Protect the friendly hive from a swarm of mechanical invaders.',
     rules: [
       'Zap the marching robots. Higher rows are worth more points.',
       'Hide behind the scrap barriers. Every hit wears them away.',

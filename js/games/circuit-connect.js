@@ -222,6 +222,7 @@
     c.moveTo(r * 0.16, -r * 0.5); c.lineTo(-r * 0.36, r * 0.12); c.lineTo(-r * 0.04, r * 0.12);
     c.lineTo(-r * 0.18, r * 0.62); c.lineTo(r * 0.36, -r * 0.04); c.lineTo(r * 0.04, -r * 0.04);
     c.closePath(); c.fill();
+    K.drawHive(c,0,0,s*.43); K.drawBee(c,s*.2,-s*.22,s*.22,t);
   }
 
   function drawRobot(c, s, look, lit, t, litAt, cheer) {
@@ -279,9 +280,9 @@
 
   Arcade.register({
     id: 'circuit-connect',
-    title: 'Circuit Connect',
+    title: 'Circuit Hive',
     cat: 'puzzle',
-    blurb: 'Turn the wires and wake up every robot on the board.',
+    blurb: 'Rotate the wires to bring honey power from the hive to every robot.',
     rules: [
       'Turn wire tiles so power flows from the generator to every robot.',
       'Tap a tile to turn it clockwise. Right-click or Shift+click turns it back.',

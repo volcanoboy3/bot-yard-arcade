@@ -72,68 +72,12 @@
     c.fillStyle = body; K.rr(c, x - 12, y - 12, 24, 21.5, 6);
     c.fillStyle = 'rgba(255,255,255,0.28)'; K.rr(c, x - 9, y - 10.5, 18, 2.5, 1.2);
     c.fillStyle = 'rgba(0,0,0,0.22)'; K.rr(c, x - 8.5, y - 6.5, 17, 14, 3);
-    if (vertical) K.battery(c, x, y + 0.5, 9, 14, 1, C.good);
-    else K.battery(c, x - 0.5, y + 0.5, 14, 9, 1, C.good);
+    K.drawHive(c,x,y,17);
   }
   /** The locomotive: the player's bot head seen from above, facing ang. */
-  function paintHead(c, x, y, ang, o, t) {
-    const body = o.body || C.glow, dark = K.shade(body, -0.4), eye = o.eye || C.eye;
-    c.save();
-    c.translate(x, y); c.rotate(ang); c.scale(1.14, 1.14);
-    c.fillStyle = 'rgba(0,0,0,0.3)';
-    if (o.head === 'dome') K.circle(c, 1, 2, 16); else K.rr(c, -14, -13, 30, 30, 8);
-    if (o.head === 'dome') {
-      c.fillStyle = dark; K.circle(c, 0, 1, 15.5);
-      c.fillStyle = body; K.circle(c, 0, 0, 15);
-      c.fillStyle = 'rgba(255,255,255,0.25)'; c.beginPath(); c.ellipse(-5, -7, 6, 3, -0.5, 0, Math.PI * 2); c.fill();
-      c.fillStyle = C.dark; c.beginPath(); c.arc(0, 0, 12, -1.05, 1.05); c.arc(0, 0, 3, 1.05, -1.05, true); c.closePath(); c.fill();
-    } else {
-      const rad = o.head === 'tv' ? 3 : 8;
-      c.fillStyle = dark; K.rr(c, -15, -14, 30, 30, rad);
-      c.fillStyle = body; K.rr(c, -15, -15, 30, 29, rad);
-      c.fillStyle = 'rgba(255,255,255,0.25)'; K.rr(c, -12, -13, 20, 3, 1.5);
-      c.fillStyle = C.dark; K.rr(c, 1, -11, 12, 22, o.head === 'tv' ? 2 : 5);
-      if (o.head === 'tv') {
-        c.fillStyle = 'rgba(255,255,255,0.06)';
-        for (let yy = -9; yy < 10; yy += 3) c.fillRect(2, yy, 10, 1);
-        c.fillStyle = K.shade(body, -0.35); K.circle(c, -10, -9, 2.3); K.circle(c, -10, 9, 2.3);
-      }
-    }
-    // eyes, looking ahead
-    const mood = o.mood || 'happy';
-    const blink = mood !== 'dead' && (t % 3.4) < 0.12;
-    for (const s of [-1, 1]) {
-      const ex = 8, ey = s * 5.2;
-      if (mood === 'dead') {
-        c.strokeStyle = eye; c.lineWidth = 1.8; c.lineCap = 'round';
-        c.beginPath(); c.moveTo(ex - 2.6, ey - 2.6); c.lineTo(ex + 2.6, ey + 2.6); c.moveTo(ex + 2.6, ey - 2.6); c.lineTo(ex - 2.6, ey + 2.6); c.stroke();
-      } else if (blink) {
-        c.fillStyle = eye; c.fillRect(ex - 0.9, ey - 3, 1.8, 6);
-      } else {
-        const er = mood === 'wow' ? 4 : 3.1;
-        c.fillStyle = K.alpha(eye, 0.25); K.circle(c, ex, ey, er + 2.2);
-        c.fillStyle = eye;
-        if (o.head === 'tv') K.rr(c, ex - er, ey - er, er * 2, er * 2, 1); else K.circle(c, ex, ey, er);
-      }
-    }
-    // antenna on the back of the head
-    const on = Math.sin(t * 8) > 0;
-    const red = on ? '#ff4d4d' : '#ffb3b3';
-    if (o.antenna === 'bolt') {
-      c.fillStyle = C.safety;
-      c.beginPath(); c.moveTo(-6, -6); c.lineTo(-11, 1); c.lineTo(-8, 1); c.lineTo(-10, 7); c.lineTo(-4, -1); c.lineTo(-7, -1); c.closePath(); c.fill();
-    } else if (o.antenna === 'twin') {
-      c.fillStyle = on ? '#ff4d4d' : '#ffb3b3'; K.circle(c, -9, -9, 2.6);
-      c.fillStyle = on ? '#ffb3b3' : '#ff4d4d'; K.circle(c, -9, 9, 2.6);
-    } else if (o.antenna === 'dish') {
-      c.fillStyle = C.steel; c.beginPath(); c.arc(-7, 0, 6.5, Math.PI / 2, Math.PI * 1.5); c.closePath(); c.fill();
-      c.fillStyle = 'rgba(255,255,255,0.3)'; c.beginPath(); c.arc(-7, 0, 4, Math.PI / 2, Math.PI * 1.5); c.closePath(); c.fill();
-      c.fillStyle = red; K.circle(c, -8, 0, 1.8);
-    } else if (o.antenna !== 'none') {
-      c.fillStyle = red; K.circle(c, -7, 0, 3.6);
-      c.fillStyle = 'rgba(255,255,255,0.55)'; K.circle(c, -8, -1, 1.2);
-    }
-    c.restore();
+  function paintHead(c,x,y,ang,o,t) {
+    c.save();c.translate(x,y);c.rotate(ang+Math.PI/2);
+    K.drawBot(c,0,0,34,{...o,t,shadow:false,arms:'none'});c.restore();
   }
   function paintScrap(c, x, y, seed) {
     c.fillStyle = 'rgba(0,0,0,0.35)'; K.rr(c, x - 12, y - 10, 26, 25, 4);
@@ -163,18 +107,18 @@
       }
       c.stroke();
     }
-    K.battery(c, 0, Math.sin(t * 4) * 1.2, 14, 22, 1, col);
+    K.drawHive(c, 0, Math.sin(t * 4) * 1.2, golden ? 32 : 25);
     c.restore();
   }
 
   Arcade.register({
     id: 'battery-snake',
-    title: 'Battery Snake',
+    title: 'Honey Snake',
     cat: 'action',
-    blurb: 'Haul batteries with your bot train. Do not crash!',
+    blurb: 'Guide your robot train around the hive, collecting honey.',
     rules: [
-      'Steer to the batteries. Each one adds a cart and 10 points.',
-      'Golden batteries are worth 50 but vanish in a few seconds.',
+      'Steer to the honey cells. Each one adds a cart and 10 points.',
+      'Golden honey cells are worth 50 but vanish in a few seconds.',
       'Longer trains go faster, and scrap blocks start to drop in.',
       'Crash into your carts or scrap and the run is over.'
     ],
@@ -273,7 +217,7 @@
         if (food) food.t = 0;
         else {
           S.state = 'dead';
-          api.win({ score: S.score, title: 'Yard full!', detail: 'Your train filled the whole depot with ' + S.eaten + ' batteries.' });
+          api.win({ score: S.score, title: 'Yard full!', detail: 'Your train filled the whole depot with ' + S.eaten + ' honey cells.' });
         }
       }
       const interval = () => Math.max(0.08, 0.18 - (snake.length - 3) * 0.0033);

@@ -270,9 +270,9 @@
 
   Arcade.register({
     id: 'brick-bot',
-    title: 'Brick Bot',
+    title: 'Honey Brick Bot',
     cat: 'action',
-    blurb: 'Bounce an energy core to smash circuit-board bricks.',
+    blurb: 'Bounce a bee ball through honey-brick factories.',
     rules: [
       'Keep the energy core bouncing. Where it hits your platform sets its angle.',
       'Steel bricks take extra hits. Red hazard bricks blow up their neighbours.',
@@ -660,7 +660,8 @@
         }
         c.globalAlpha = 1;
         c.drawImage(A.glow, b.x - 24, b.y - 24, 48, 48);
-        c.fillStyle = '#e8fdff'; K.circle(c, b.x, b.y, R * 0.72);
+        K.drawBee(c,b.x,b.y,R*2.2,S.t);
+        c.fillStyle = '#e8fdff'; K.circle(c, b.x, b.y, R * 0.25);
         c.fillStyle = '#ffffff'; K.circle(c, b.x - 2, b.y - 2, R * 0.3);
         c.strokeStyle = 'rgba(90,209,230,0.9)'; c.lineWidth = 1.6;
         c.beginPath(); c.ellipse(b.x, b.y, R + 1, (R + 1) * 0.38, S.t * 6, 0, Math.PI * 2); c.stroke();

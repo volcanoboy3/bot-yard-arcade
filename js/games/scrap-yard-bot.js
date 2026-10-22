@@ -41,6 +41,7 @@
     b.fillStyle = 'rgba(0,0,0,0.35)'; b.fillRect(0, GROUND + 14, W, 16);
     b.fillStyle = '#4a6272'; b.font = '700 11px "Chakra Petch", sans-serif'; b.textAlign = 'left';
     b.fillText('BAY 07 · ASSEMBLY FLOOR', 44, GROUND + 50);
+    K.drawHive(b,58,GROUND+43,36); K.drawHive(b,W-58,GROUND+43,36);
   }
 
   function drawIcon(c, type, col, t) {
@@ -165,6 +166,7 @@
       c.beginPath(); c.moveTo(x, headTop); c.lineTo(x, headTop - 18); c.stroke();
       c.fillStyle = Math.sin(t * 8) > 0 ? '#ff4d4d' : '#ffb3b3'; circle(c, x, headTop - 21, 5);
     }
+    K.drawBee(c,x+48,top-22+Math.sin(t*3)*4,28,t);
   }
 
   function drawSheet(c, have) {
@@ -182,9 +184,9 @@
 
   Arcade.register({
     id: 'scrap-yard-bot',
-    title: 'Scrap Yard Bot',
+    title: 'Bee Yard Bot',
     cat: 'action',
-    blurb: 'Parts rain into the yard. Catch them to build yourself.',
+    blurb: 'Catch parts to build robot helpers for the beehives.',
     rules: [
       'Catch all six parts to ship your model and move up a mark.',
       'Each part is a perk: legs run faster, the head doubles gear points, the antenna pulls in gears.',

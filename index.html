@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/bee-shop.css">
 <style>
   :root {
     color-scheme: dark;
@@ -373,7 +374,7 @@
         <span>Bot Yard</span>
       </a>
       <div class="topbar-right">
-        <span class="saved-note">Scores and your bot save in this browser.</span>
+        <a class="coin-pill" href="#robot-shop">Bee coins <b data-coin-balance>…</b></a><span class="saved-note">Play to earn. Decorate your bot.</span>
         <button type="button" class="icon-toggle" id="hub-sound" aria-label="Turn sound off" aria-pressed="false"></button>
       </div>
     </header>
@@ -382,7 +383,7 @@
       <div>
         <p class="kicker">Bay 07 · Game floor</p>
         <h1 class="wordmark" id="wordmark"><span class="line">Bot Yard</span><span class="line line-2">Arcade</span></h1>
-        <p class="lede">Robots, bees, and a whole world of games. Quick matches or adventures that keep growing. <b>Build your bot</b>, then play. It shows up in every game marked <b>Stars your bot</b>.</p>
+        <p class="lede">Robots, bees, and a whole world of games. Quick matches or adventures that keep growing. <b>Build your bot</b>, then play. Earn surprise <b>bee coins</b> by playing, then unlock 50 paint styles, shapes, and accessories.</p>
         <div class="hero-actions">
           <a class="btn primary big" href="#honey-island" id="hero-first">Explore Honey Island</a>
           <button type="button" class="btn ghost big" id="hero-random">Surprise me</button>
@@ -394,29 +395,14 @@
         </ul>
       </div>
 
-      <div class="bay" aria-labelledby="bay-title">
+      <div class="bay" id="robot-shop" aria-labelledby="bay-title">
         <div class="bay-head">
-          <h2 id="bay-title">Assembly bay · your bot</h2>
+          <h2 id="bay-title">Bee Boutique · your bot</h2>
           <span class="unit" id="bay-unit">BOLT-7</span>
         </div>
         <div class="bay-body">
           <div class="bay-stage"><canvas id="bay-canvas" width="400" height="400" aria-label="Your robot"></canvas></div>
-          <div class="bay-controls">
-            <div class="field">
-              <label class="field-label" for="bot-name">Name</label>
-              <div class="name-row">
-                <input id="bot-name" maxlength="10" autocomplete="off" spellcheck="false">
-                <button type="button" class="dice" id="bot-random" aria-label="Build a random bot">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="field"><span class="field-label" id="lbl-body">Plating</span><div class="swatches" id="opt-body" role="group" aria-labelledby="lbl-body"></div></div>
-            <div class="field"><span class="field-label" id="lbl-head">Head</span><div class="seg" id="opt-head" role="group" aria-labelledby="lbl-head"></div></div>
-            <div class="field"><span class="field-label" id="lbl-antenna">Antenna</span><div class="seg" id="opt-antenna" role="group" aria-labelledby="lbl-antenna"></div></div>
-            <div class="field"><span class="field-label" id="lbl-base">Drive</span><div class="seg" id="opt-base" role="group" aria-labelledby="lbl-base"></div></div>
-            <div class="field"><span class="field-label" id="lbl-eye">Eyes</span><div class="swatches" id="opt-eye" role="group" aria-labelledby="lbl-eye"></div></div>
-          </div>
+          <div class="bay-controls" id="bee-shop" aria-label="Robot coin shop"></div>
         </div>
       </div>
     </section>
@@ -448,6 +434,7 @@
     <div class="play-name"><span id="play-cat">Action</span><h2 id="play-title">Game</h2></div>
     <div class="readouts">
       <div id="play-stats"></div>
+      <div class="readout"><span id="coin-reward-label">Bee coins</span><b data-coin-balance>…</b></div>
       <div class="readout"><span>Score</span><b id="play-score">0</b></div>
       <div class="readout"><span>Best</span><b id="play-best">0</b></div>
     </div>
@@ -472,7 +459,10 @@
 <noscript><p style="padding:24px">Bot Yard Arcade needs JavaScript turned on to run its games.</p></noscript>
 
 <script src="js/kit.js"></script>
+<script src="js/wardrobe-model.js"></script>
+<script src="js/wardrobe-wallet.js"></script>
 <script src="js/engine.js"></script>
+<script src="js/wardrobe-shop.js"></script>
 <script src="js/bee-economy.js"></script>
 <script src="js/island-model.js"></script>
 <!-- games: each file registers itself with Arcade.register(...) -->

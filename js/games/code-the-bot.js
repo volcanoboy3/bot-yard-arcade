@@ -21,9 +21,9 @@
     { name: 'Zigzag', dir: 1, main: 10, best: 8, map: ['S..  ', '  .  ', '  ..P'],
       tip: "Left and right are your bot's left and right. Watch its arrow." },
     { name: 'Turn around', dir: 1, main: 10, best: 8, map: ['#####', 'P.S.B'],
-      tip: 'Batteries! Grab every one, then end on the pad. Two turns face you the other way.' },
+      tip: 'Honey cells! Grab every one, then end on the pad. Two turns face you the other way.' },
     { name: 'Battery loop', dir: 1, main: 12, best: 10, map: ['B..B', '.  .', 'S..P'],
-      tip: 'The pad is close, but the batteries come first.' },
+      tip: 'The pad is close, but the honey cells come first.' },
     { name: 'Long hall', dir: 1, main: 4, f1: 4, best: 6, map: ['#########', 'S.......P'],
       tip: 'Main only fits 4 blocks. Fill F1 with Forwards, then put Run F1 in Main.' },
     { name: 'Stairs', dir: 1, main: 5, f1: 4, best: 8, map: ['    P', '   ..', '  .. ', ' ..  ', 'S.   '],
@@ -266,7 +266,7 @@
     const bob = Math.sin(time * 3.2 + i * 1.7) * t * 0.035;
     c.fillStyle = 'rgba(124,240,138,0.18)';
     c.beginPath(); c.ellipse(cx, cy + t * 0.14, t * 0.24, t * 0.08, 0, 0, Math.PI * 2); c.fill();
-    K.battery(c, cx, cy - t * 0.1 + bob, t * 0.26, t * 0.42, 1, C.good);
+    K.drawHive(c, cx, cy - t * 0.1 + bob, t * 0.48);
   }
   function drawArrow(c, cx, cy, ang, t, alpha, dist) {
     c.save(); c.translate(cx, cy); c.rotate(ang); c.globalAlpha = alpha;
@@ -310,12 +310,12 @@
 
   Arcade.register({
     id: 'code-the-bot',
-    title: 'Code the Bot',
+    title: 'Code the Bee Bot',
     cat: 'puzzle',
-    blurb: 'Program your bot to reach its charging pad.',
+    blurb: 'Program your robot to collect honey power and reach the hive gate.',
     rules: [
       'Build a program from Forward and Turn blocks, then press Run.',
-      'End on the charging pad. From level 4, grab every battery first.',
+      'End on the charging pad. From level 4, grab every honey cell first.',
       'Walls stop your bot and gaps make it fall. Fix your program and try again.',
       'From level 6, F1 lets you reuse a pattern. Fewer blocks earn more stars.'
     ],
@@ -723,12 +723,12 @@
           const e = rows[step.area].els[step.i];
           if (e) { e.classList.add('is-bad'); badEl = e; }
         }
-        const plural = left === 1 ? 'battery' : 'batteries';
+        const plural = left === 1 ? 'honey cell' : 'honey cells';
         const M = {
           wall: ['BONK!', 'A wall is in the way.', 'Bonk! A wall is in the way. The red block is where it went wrong. Fix it and run again.'],
           pit: ['WHOOPS!', 'Your bot rolled off the edge.', 'Whoops! Your bot rolled off the edge. The red block is where it went wrong.'],
           short: ['NOT THERE YET', 'The program ended off the pad.', 'Your program ended before the charging pad. Add or change some blocks and run it again.'],
-          bats: ['ALMOST!', left + ' ' + plural + ' left to grab.', 'You made it to the pad, but ' + left + ' ' + plural + (left === 1 ? ' is' : ' are') + ' still out there. Grab every battery first.']
+          bats: ['ALMOST!', left + ' ' + plural + ' left to grab.', 'You made it to the pad, but ' + left + ' ' + plural + (left === 1 ? ' is' : ' are') + ' still out there. Grab every honey cell first.']
         }[kind];
         banner = { title: M[0], sub: M[1], color: kind === 'bats' ? C.safety : C.hazard, t: 0 };
         say(M[2], 'bad');

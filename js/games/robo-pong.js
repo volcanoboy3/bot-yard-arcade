@@ -116,6 +116,7 @@
     if (glow) c.drawImage(glow, x - 26, y - 26, 52, 52);
     c.fillStyle = '#eafcff'; K.circle(c, x, y, R * 0.78);
     c.fillStyle = '#ffffff'; K.circle(c, x - 2.2, y - 2.2, R * 0.32);
+    K.drawBee(c,x,y,R*2.1,0);
   }
 
   let GLOW = null;
@@ -132,9 +133,9 @@
 
   Arcade.register({
     id: 'robo-pong', length: 'Quick matches · first to 5',
-    title: 'Robo Pong',
+    title: 'Robo Bee Pong',
     cat: 'versus',
-    blurb: 'Out-rally PONG-O-TRON, a robot that upgrades every match.',
+    blurb: 'Rally a glowing bee ball against PONG-O-TRON.',
     rules: [
       'Knock the ball past PONG-O-TRON. First to 5 points wins the match.',
       'Hit the ball with the edge of your paddle, or while moving, to angle it.',

@@ -49,6 +49,7 @@
     try {
       if (typeof def.thumb === 'function') def.thumb(c, 320, 200, kit, A.player);
       else fallbackThumb(c, def);
+      kit.drawBee(c, 292, 177, 24, .3);
     } catch (e) {
       console.error('[' + def.id + '] thumb', e);
       c.restore(); c.save(); fallbackThumb(c, def);
@@ -144,73 +145,11 @@
   document.querySelector('.brand').addEventListener('click', e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
   // ---------- the assembly bay ----------
-  const OPTS = {
-    head: [['box', 'Box'], ['dome', 'Dome'], ['tv', 'Screen']],
-    antenna: [['ball', 'Ball'], ['bolt', 'Bolt'], ['twin', 'Twin'], ['dish', 'Dish'], ['none', 'None']],
-    base: [['wheels', 'Wheels'], ['treads', 'Treads'], ['legs', 'Legs'], ['hover', 'Hover']]
-  };
-  const EYES = [['#bff6ff', 'Ice'], ['#9dff9d', 'Green'], ['#ffd36b', 'Amber'], ['#ff9ad5', 'Pink']];
-  const PLATING_NAMES = ['Cyan', 'Safety yellow', 'Orange', 'Green', 'Lilac', 'Pink', 'Silver', 'Red'];
-  const NAME_A = ['BOLT', 'ZIP', 'GEAR', 'SPARK', 'RIVET', 'COG', 'BYTE', 'VOLT', 'CHIP', 'NOVA', 'ATOM', 'TURBO', 'PIXEL', 'DYNA', 'SPROCKET'];
-  const controls = [];
-
-  function segGroup(box, key, list) {
-    for (const [value, label] of list) {
-      const b = el('button', { type: 'button', on: { click: () => setPart(key, value) } }, label);
-      b.dataset.key = key; b.dataset.value = value;
-      box.append(b); controls.push(b);
-    }
-  }
-  function swatchGroup(box, key, list) {
-    for (const [value, label] of list) {
-      const b = el('button', { type: 'button', class: 'swatch', 'aria-label': label, title: label, on: { click: () => setPart(key, value) } });
-      b.style.setProperty('--c', value);
-      b.dataset.key = key; b.dataset.value = value;
-      box.append(b); controls.push(b);
-    }
-  }
-  swatchGroup($('opt-body'), 'body', kit.PLATING.map((c, i) => [c, PLATING_NAMES[i] || c]));
-  segGroup($('opt-head'), 'head', OPTS.head);
-  segGroup($('opt-antenna'), 'antenna', OPTS.antenna);
-  segGroup($('opt-base'), 'base', OPTS.base);
-  swatchGroup($('opt-eye'), 'eye', EYES);
-
-  const nameInput = $('bot-name');
-  function syncBay() {
-    const p = A.player;
-    controls.forEach(b => b.setAttribute('aria-pressed', String(p[b.dataset.key] === b.dataset.value)));
-    if (document.activeElement !== nameInput) nameInput.value = p.name;
-    $('bay-unit').textContent = p.name || 'BOLT-7';
-  }
-  let wave = 0;
-  function setPart(key, value) {
-    A.setPlayer({ [key]: value });
-    A.sound.unlock(); A.sound.sfx('click');
-    wave = 1.2;
-  }
-  nameInput.addEventListener('input', () => {
-    const clean = nameInput.value.toUpperCase().replace(/[^A-Z0-9 -]/g, '').slice(0, 10);
-    if (clean !== nameInput.value) nameInput.value = clean;
-    A.setPlayer({ name: clean.trim() || 'BOLT-7' });
-  });
-  nameInput.addEventListener('blur', () => { nameInput.value = A.player.name; });
-  $('bot-random').addEventListener('click', () => {
-    A.setPlayer({
-      body: kit.pick(kit.PLATING),
-      eye: kit.pick(EYES)[0],
-      head: kit.pick(OPTS.head)[0],
-      antenna: kit.pick(OPTS.antenna)[0],
-      base: kit.pick(OPTS.base)[0],
-      name: kit.pick(NAME_A) + '-' + kit.randi(1, 99)
-    });
-    A.sound.unlock(); A.sound.sfx('talk');
-    wave = 1.6;
-  });
+  let wave = 0, previewPlayer = null;
+  mountBeeShop($('bee-shop'), A, p => { previewPlayer = p; wave = 1.4; $('bay-unit').textContent = p.name; });
   A.on('player', () => {
-    syncBay();
     for (const id in cards) if (cards[id].def.usesPlayer) drawThumb(cards[id].def, cards[id].cv);
   });
-  syncBay();
 
   // bay canvas: the bot on a lit platform, eyes following the pointer
   const bayCanvas = $('bay-canvas');
@@ -241,7 +180,7 @@
     bay.setTransform(bayCanvas.width / BW, 0, 0, bayCanvas.height / BH, 0, 0);
     bay.drawImage(bayBg, 0, 0, BW, BH);
     const bob = reduceMotion ? 0 : Math.sin(t * 2) * 1.2;
-    kit.drawBot(bay, 100, 104 + bob, 118, Object.assign({}, A.player, {
+    kit.drawBot(bay, 100, 104 + bob, 118, Object.assign({}, previewPlayer || A.player, {
       t: reduceMotion ? 0 : t, look: look.x, lookY: look.y, shadow: true,
       arms: wave > 0 ? 'wave' : 'down', mood: wave > 0 ? 'happy' : 'happy'
     }));

@@ -87,6 +87,7 @@
     } else {
       c.fillStyle = 'rgba(0,0,0,0.2)'; c.fillRect(11, 13.5, 10, 1.6); c.fillRect(11, 17.5, 10, 1.6);
     }
+    K.drawBee(c,16,16,13,0);
     c.restore();
   }
 
@@ -172,9 +173,9 @@
 
   Arcade.register({
     id: 'scrap-stacker',
-    title: 'Scrap Stacker',
+    title: 'Honeycomb Stacker',
     cat: 'puzzle',
-    blurb: 'Stack falling scrap plates and crush full rows.',
+    blurb: 'Stack honeycomb-stamped plates and clear whole rows.',
     rules: [
       'Scrap plates drop into the crusher. Fill a whole row to crush it.',
       'Crush more rows at once for more points. Four at once is a Mega Crush.',

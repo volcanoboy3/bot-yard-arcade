@@ -85,7 +85,7 @@
   function drawCell(c, x, y, t) {
     c.fillStyle = 'rgba(124,240,138,0.16)'; K.circle(c, x, y, 20 + Math.sin(t * 5) * 2);
     K.ring(c, x, y, 16, 1.5, 'rgba(124,240,138,0.5)');
-    K.battery(c, x, y, 15, 25, 1, C.good);
+    K.drawFlower(c, x, y, 27, '#fff0ac'); K.drawBee(c, x + 14, y - 13, 15, t);
   }
   function drawOrbBody(c, x, y, r, t, a) {
     c.globalAlpha = 0.22 * a; c.fillStyle = PLASMA; K.circle(c, x, y, r + 8 + Math.sin(t * 20) * 1.5);
@@ -120,12 +120,12 @@
 
   Arcade.register({
     id: 'laser-dodge',
-    title: 'Laser Dodge',
+    title: 'Bee Laser Dodge',
     cat: 'action',
-    blurb: 'Dodge turret lasers in the test arena. Survive the waves!',
+    blurb: 'Protect your bee-powered robot and gather flowers between laser sweeps.',
     rules: [
       'A blinking red line means a laser is about to fire. Move!',
-      'Energy cells are worth 50. Staying alive earns 10 a second.',
+      'Flowers are worth 50. Staying alive earns 10 a second.',
       'You have 3 shields. New waves bring faster lasers, orbs and a spin beam.'
     ],
     how: 'Arrows or WASD to move · drag or tap the arena',

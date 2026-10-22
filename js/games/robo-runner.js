@@ -143,14 +143,14 @@
   function drawBoltPickup(c, x, y, t, i) {
     const bob = Math.sin(t * 4 + i) * 3;
     c.fillStyle = 'rgba(224,192,100,0.18)'; K.circle(c, x, y + bob, 15);
-    K.bolt(c, x, y + bob + 2, 24, { rot: Math.sin(t * 3 + i) * 0.5, color: C.gold });
+    K.drawBee(c, x, y + bob, 28, t);
   }
 
   Arcade.register({
     id: 'robo-runner',
-    title: 'Robo Runner',
+    title: 'Robo Bee Runner',
     cat: 'action',
-    blurb: 'Race down the conveyor. Jump, duck and grab bolts.',
+    blurb: 'Race through the bee yard and collect flying bee tokens.',
     rules: [
       'Your bot races along the factory conveyor. It speeds up as you go.',
       'Jump over crates and barrels. Hold jump to clear the tall stacks.',
@@ -305,7 +305,7 @@
         api.after(1100, () => api.gameOver({
           score,
           title: 'Crashed at ' + m + ' m',
-          detail: 'You ran ' + m + ' m and grabbed ' + boltsGot + (boltsGot === 1 ? ' bolt.' : ' bolts.')
+          detail: 'You ran ' + m + ' m and grabbed ' + boltsGot + (boltsGot === 1 ? ' bee token.' : ' bee tokens.')
         }));
       }
 

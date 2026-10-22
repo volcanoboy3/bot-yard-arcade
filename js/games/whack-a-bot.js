@@ -71,6 +71,7 @@
     c.fillStyle = '#2b4353'; ellipse(c, x, y + 3, 46, 10);
     c.fillStyle = C.steel; ellipse(c, x, y, 46, 9);
     c.fillStyle = '#a9b6bf'; ellipse(c, x, y - 1.5, 38, 5.5);
+    K.drawBee(c,x,y-2,24,0);
   }
 
   /** Mallet with a hazard-striped head. Grip at (px, py), head centre 93*s along angle ang. */
@@ -157,9 +158,9 @@
 
   Arcade.register({
     id: 'whack-a-bot',
-    title: 'Whack-a-Bot',
+    title: 'Whack-a-Bee Bot',
     cat: 'action',
-    blurb: 'Bonk the broken bots. Spare the friendly ones.',
+    blurb: 'Catch the mischievous robot helpers popping out of the bee yard.',
     rules: [
       'Angry, sparking bots pop out of the hatches. Bonk them before they duck back down.',
       'Leave the happy blue and green bots alone. Bonking one costs points.',

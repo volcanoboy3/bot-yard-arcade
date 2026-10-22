@@ -194,6 +194,7 @@
       K.gear(c, x, y + r * 0.03, r * 0.5, { teeth: 8, color: K.shade(color, -0.5), hole: K.shade(color, -0.1) });
       K.gear(c, x, y, r * 0.48, { teeth: 8, color: K.shade(color, 0.45), hole: color });
     }
+    if(emblem==='bolt') K.drawBee(c,x,y,r*1.15,0); else K.drawFlower(c,x,y,r*.85,'#fff0be');
   }
   function drawBackground(c) {
     K.bgFactory(c, W, H);
@@ -255,9 +256,9 @@
 
   Arcade.register({
     id: 'connect-bot',
-    title: 'Connect Bot',
+    title: 'Connect the Hive',
     cat: 'versus',
-    blurb: 'Line up four discs before the robot does.',
+    blurb: 'Connect four bee-and-flower tokens before the rival hive does.',
     rules: [
       'Drop discs into the columns. Four in a row wins: across, up or diagonal.',
       'CONNECT-4X plans ahead, so block its lines before they reach four.',

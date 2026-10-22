@@ -77,6 +77,7 @@
     c.fillStyle = '#15222c'; K.circle(c, w / 2, h / 2, br * 0.6);
     K.ring(c, w / 2, h / 2, br * 0.6, Math.max(1, br * 0.07), 'rgba(90,209,230,0.45)');
     boltMark(c, w / 2, h / 2, br * 0.95, C.safety);
+    K.drawBee(c,w/2,h/2,Math.min(w,h)*.45,0);
   }
 
   /** Face-up panel for one robot: colour-washed bay with a spotlight and floor strip. */
@@ -178,9 +179,9 @@
 
   Arcade.register({
     id: 'bot-match',
-    title: 'Bot Match',
+    title: 'Bee Bot Match',
     cat: 'brain',
-    blurb: 'Flip the panels and find every matching robot pair.',
+    blurb: 'Match pairs of robot bee helpers hiding behind bee cards.',
     rules: [
       'Flip two panels. If the robots match, they stay face up.',
       'No match? They flip back, so remember where each robot was.',

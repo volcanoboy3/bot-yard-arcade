@@ -73,6 +73,7 @@
       const a = i * Math.PI / 6 + Math.PI / 12;
       c.fillStyle = '#2b4353'; K.circle(c, CX + Math.cos(a) * 185, CY + Math.sin(a) * 185, 2.4);
     }
+    K.drawBee(c,124,312,40,0); K.drawBee(c,476,312,40,.1);
   }
 
   function wedgePath(c, i, rIn, rOut, off) {
@@ -224,9 +225,9 @@
 
   Arcade.register({
     id: 'copy-bot',
-    title: 'Copy Bot',
+    title: 'Copy Bee Bot',
     cat: 'brain',
-    blurb: 'Watch the robot play a tune of lights, then copy it.',
+    blurb: 'Remember the bee bot’s flashing patterns and copy the buzz sequence.',
     rules: [
       'The robot lights up its buttons in order. Press them back in the same order.',
       'Each round adds one more step, and the tune gets faster.',

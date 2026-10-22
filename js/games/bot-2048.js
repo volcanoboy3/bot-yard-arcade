@@ -103,6 +103,7 @@
       case 9: arm(c, s); break;
       default: head(c, s, t);
     }
+    if(L%2)K.drawBee(c,0,0,s*.68,t);else K.drawHive(c,0,0,s*.7);
   }
 
   /** One part tile centred on x,y with side s. k scales it (pop / appear). */
@@ -163,9 +164,9 @@
 
   Arcade.register({
     id: 'bot-2048',
-    title: 'Bot 2048',
+    title: 'Honeycomb 2048',
     cat: 'puzzle',
-    blurb: 'Slide parts together until you build a robot.',
+    blurb: 'Slide matching honey-powered parts into bigger bee bots.',
     rules: [
       'Every move slides all the parts. Two matching parts join into the next one.',
       'Bolt, Nut, Gear, Spring, Chip, Battery, Motor, Sensor, Arm, Head, Robot.',

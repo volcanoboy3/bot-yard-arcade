@@ -9,7 +9,7 @@
   const COUNTER = { rock: 'paper', paper: 'scissors', scissors: 'rock' }; // value beats key
   const VERB = { rock: 'Rock smashes scissors', paper: 'Paper wraps rock', scissors: 'Scissors cut paper' };
   const CELLS = 5;
-  const CPU = { body: '#ff6b3d', eye: '#ffd36b', head: 'tv', antenna: 'dish', base: 'treads' };
+  const CPU = { body: '#ff6b3d', eye: '#ffd36b', head: 'tv', antenna: 'dish', base: 'treads', pattern:'stripes', back:'wings', hat:'cap' };
 
   const ICON = {
     rock: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 33l5-15 11-8 13 4 6 13-5 12-14 3-12-3z" fill="currentColor"/><path d="M12 18l9 6 2 15M23 10l-2 14 15-10M21 24l21 3" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="2" stroke-linejoin="round"/></svg>',
@@ -120,9 +120,9 @@
 
   Arcade.register({
     id: 'rock-paper-robot',
-    title: 'Rock Paper Robot',
+    title: 'Rock Paper Bee-Bot',
     cat: 'versus',
-    blurb: 'This robot learns your habits. Stay unpredictable.',
+    blurb: 'Challenge a bee-striped robot that learns your habits.',
     rules: [
       'Pick rock, paper or scissors. Rock beats scissors, scissors beat paper, paper beats rock.',
       'Each time the robot wins you lose a battery cell. Ties are free.',

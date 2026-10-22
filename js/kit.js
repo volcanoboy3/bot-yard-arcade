@@ -373,6 +373,7 @@
       c.lineTo(23, -12); c.quadraticCurveTo(23, -9, 20, -9);
       c.lineTo(-20, -9); c.quadraticCurveTo(-23, -9, -23, -12);
       c.closePath(); c.fill();
+      c.save();c.clip();skin(c,o,-23,-43,46,34,0);c.restore();
       c.fillStyle = 'rgba(255,255,255,0.22)';
       c.beginPath(); c.ellipse(-9, -34, 6, 3, -0.5, 0, Math.PI * 2); c.fill();
       c.fillStyle = C.dark; rr(c, -18, -31, 36, 13, 6.5);
@@ -381,7 +382,7 @@
       return -43;
     }
     if (o.head === 'tv') {
-      c.fillStyle = body; rr(c, -25, -42, 50, 32, 5);
+      c.fillStyle = body; rr(c, -25, -42, 50, 32, 5);skin(c,o,-25,-42,50,32,5);
       c.fillStyle = C.dark; rr(c, -21, -38, 35, 24, 4);
       c.fillStyle = 'rgba(255,255,255,0.05)';
       for (let y = -36; y < -15; y += 3) c.fillRect(-20, y, 33, 1);
@@ -391,7 +392,8 @@
       botMouth(c, o, -3.5, -20.5, o.eye, true);
       return -42;
     }
-    c.fillStyle = body; rr(c, -22, -42, 44, 32, 8);
+    if(o.head==='hex'){c.fillStyle=body;c.beginPath();c.moveTo(-13,-44);c.lineTo(13,-44);c.lineTo(25,-27);c.lineTo(13,-10);c.lineTo(-13,-10);c.lineTo(-25,-27);c.closePath();c.fill();c.save();c.clip();skin(c,o,-25,-44,50,34,0);c.restore();}
+    else {c.fillStyle = body; rr(c, -22, -42, 44, 32, 8);skin(c,o,-22,-42,44,32,8);}
     c.fillStyle = 'rgba(255,255,255,0.2)'; rr(c, -17, -40, 34, 3.5, 2);
     c.fillStyle = C.dark; rr(c, -16, -35, 32, 15, 5);
     botEyes(c, o, 0, -27.5, 7, 3.8, blink, false);
@@ -442,8 +444,47 @@
    *       walk (animate wheels/legs), flip (mirror), shadow (ground shadow).
    * Pass api.player straight in to draw the player's own bot: drawBot(ctx, x, y, 80, {...api.player, t}).
    */
+  const paintCache = new Map();
+  function skin(c,o,x,y,w,h,r) {
+    if (!o.pattern || o.pattern === 'solid') return;
+    c.save(); rrPath(c,x,y,w,h,r); c.clip();
+    if(o.pattern==='custom' && Array.isArray(o.paintPixels) && o.paintPixels.length===256) {
+      const key=o.paintPixels.join(','),cached=paintCache.get(key);
+      let image=cached;
+      if(!image) { image=document.createElement('canvas');image.width=image.height=16;const p=image.getContext('2d');o.paintPixels.forEach((color,i)=>{if(/^#[0-9a-f]{6}$/i.test(color||'')){p.fillStyle=color;p.fillRect(i%16,Math.floor(i/16),1,1);}});if(paintCache.size>40)paintCache.clear();paintCache.set(key,image); }
+      c.imageSmoothingEnabled=false;c.drawImage(image,x,y,w,h);
+    } else if(o.pattern==='stripes') {
+      c.strokeStyle='rgba(33,36,48,.52)';c.lineWidth=5;for(let i=x-h;i<x+w+h;i+=13){c.beginPath();c.moveTo(i,y);c.lineTo(i+h,y+h);c.stroke();}
+    } else if(o.pattern==='petals') {
+      for(let yy=y+4;yy<y+h;yy+=11)for(let xx=x+4;xx<x+w;xx+=12){c.fillStyle='#fff5bd';circle(c,xx,yy,2.5);c.fillStyle='#ffb5cf';circle(c,xx+2,yy+2,1.5);}
+    } else if(o.pattern==='honeycomb') {
+      c.strokeStyle='#ffe6a2';c.lineWidth=1.2;
+      for(let row=0;row<6;row++)for(let col=0;col<8;col++){const xx=x+col*11+(row%2)*5.5,yy=y+row*9;c.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;const aX=xx+6*Math.cos(a),aY=yy+6*Math.sin(a);if(i)c.lineTo(aX,aY);else c.moveTo(aX,aY);}c.closePath();c.stroke();}
+    } else if(o.pattern==='royal') {
+      const g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,'#ffffff00');g.addColorStop(.45,'#fff4c399');g.addColorStop(.55,'#dbfaffbb');g.addColorStop(1,'#ffffff00');c.fillStyle=g;c.fillRect(x,y,w,h);
+      c.fillStyle='#fff0a9';for(let i=0;i<7;i++){const px=x+((i*17+4)%Math.max(1,w)),py=y+((i*11+6)%Math.max(1,h));c.fillRect(px-2,py,5,1);c.fillRect(px,py-2,1,5);}
+    }
+    c.restore();
+  }
+  function costumeBack(c,o,t) {
+    if(o.back==='wings')for(const dir of [-1,1]){c.fillStyle='rgba(214,249,255,.75)';c.strokeStyle='#a7dfe9';c.lineWidth=1.5;c.beginPath();c.ellipse(dir*33,-1,15,28,dir*(.5+Math.sin(t*9)*.1),0,Math.PI*2);c.fill();c.stroke();}
+    if(o.back==='jetpack'){c.fillStyle='#dab65c';rr(c,-36,-2,11,33,4);rr(c,25,-2,11,33,4);c.fillStyle='#8fe7ea';for(const x of [-31,31]){c.beginPath();c.moveTo(x-4,29);c.lineTo(x+4,29);c.lineTo(x,42+Math.sin(t*12)*4);c.closePath();c.fill();}}
+  }
+  function costumeFront(c,o,t) {
+    if(o.face==='goggles'){c.strokeStyle='#ffd66b';c.lineWidth=3;for(const x of [-8,8]){rrPath(c,x-7,-36,14,14,5);c.stroke();}c.beginPath();c.moveTo(-1,-29);c.lineTo(1,-29);c.stroke();}
+    if(o.face==='shades'){c.fillStyle='#302947';rr(c,-17,-36,15,11,3);rr(c,2,-36,15,11,3);c.fillRect(-3,-33,6,3);c.fillStyle='#dcf6ff';c.fillRect(-13,-34,5,2);c.fillRect(6,-34,5,2);}
+    if(o.hat==='cap'){c.fillStyle='#ffc84d';rr(c,-24,-50,48,11,4);rr(c,-12,-64,24,18,8);c.fillStyle='#30323b';c.fillRect(-8,-62,5,14);c.fillRect(2,-62,5,14);}
+    if(o.hat==='flower')for(let i=0;i<5;i++)drawFlower(c,-22+i*11,-47-Math.sin(i*Math.PI/4)*4,12,i%2?'#ffb1d2':'#fff2bb');
+    if(o.hat==='keeper'){c.fillStyle='#f5e3bb';rr(c,-31,-48,62,7,3);rr(c,-19,-63,38,18,8);c.strokeStyle='#f9e9c388';c.lineWidth=1;for(let x=-24;x<=24;x+=6){c.beginPath();c.moveTo(x,-42);c.lineTo(x,-9);c.stroke();}for(let y=-40;y<-9;y+=6){c.beginPath();c.moveTo(-24,y);c.lineTo(24,y);c.stroke();}}
+    if(o.hat==='crown'){c.fillStyle='#ffd65c';c.beginPath();c.moveTo(-23,-45);c.lineTo(-25,-62);c.lineTo(-10,-52);c.lineTo(0,-69);c.lineTo(10,-52);c.lineTo(25,-62);c.lineTo(23,-45);c.closePath();c.fill();c.fillStyle='#d6578c';circle(c,0,-53,3.5);}
+    if(o.badge==='bee')drawBee(c,0,24,15,t);
+    if(o.badge==='flower')drawFlower(c,0,23,12,'#ffa7d0');
+    if(o.badge==='star'){c.fillStyle='#ffdf7e';c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?3:7;if(i)c.lineTo(Math.cos(a)*r,23+Math.sin(a)*r);else c.moveTo(Math.cos(a)*r,23+Math.sin(a)*r);}c.closePath();c.fill();}
+  }
+
   function drawBot(c, x, y, h, opts) {
     const o = Object.assign({}, BOT, opts);
+    if(!opts || !Object.prototype.hasOwnProperty.call(opts,'pattern')) {o.pattern='stripes';if(!o.back)o.back='wings';}
     const s = h / 110, t = o.t || 0, body = o.body;
     c.save();
     c.translate(x, y);
@@ -454,11 +495,14 @@
       c.fillStyle = 'rgba(0,0,0,0.3)';
       c.beginPath(); c.ellipse(0, 50.5, 30, 4.5, 0, 0, Math.PI * 2); c.fill();
     }
+    costumeBack(c,o,t);
     botBase(c, o, t, body);
     const bob = o.base === 'hover' ? Math.sin(t * 4) * 2 - 2 : (o.walk && o.base === 'legs' ? -Math.abs(Math.sin(t * 12)) * 1.5 : 0);
     c.translate(0, bob);
     botArms(c, o, t, body, false);
-    c.fillStyle = body; rr(c, -28, -6, 56, 38, 9);
+    c.fillStyle = body;
+    if(o.shell==='hex'){c.beginPath();c.moveTo(-19,-6);c.lineTo(19,-6);c.lineTo(30,12);c.lineTo(19,32);c.lineTo(-19,32);c.lineTo(-30,12);c.closePath();c.fill();c.save();c.clip();skin(c,o,-30,-6,60,38,0);c.restore();}
+    else {rr(c,-28,-6,56,38,o.shell==='round'?19:9);skin(c,o,-28,-6,56,38,o.shell==='round'?19:9);}
     c.fillStyle = 'rgba(0,0,0,0.2)'; rr(c, -28, 21, 56, 11, [0, 0, 9, 9]);
     c.fillStyle = 'rgba(255,255,255,0.2)'; rr(c, -23, -3, 46, 3.5, 2);
     c.fillStyle = C.dark; rr(c, -17, 2, 34, 14, 4);
@@ -466,11 +510,13 @@
       const lit = o.mood !== 'sleep' && (Math.floor(t * 2.5) + i) % 4 !== 0;
       c.fillStyle = lit ? LEDS[i] : '#33434e'; circle(c, -9 + i * 9, 9, 3);
     }
+    if(o.pattern==='custom')skin(c,o,-24,0,48,28,5);
     c.fillStyle = 'rgba(255,255,255,0.35)'; circle(c, -23.5, 27, 1.6); circle(c, 23.5, 27, 1.6);
     botArms(c, o, t, body, true);
     c.fillStyle = C.steel; c.fillRect(-6, -11, 12, 6);
     const top = botHead(c, o, t, body);
     botAntenna(c, o, t, top);
+    costumeFront(c,o,t);
     c.restore();
   }
 

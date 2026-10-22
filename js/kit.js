@@ -552,12 +552,37 @@
   /** setPointerCapture that never throws (synthetic events have no live pointer). */
   function capture(el, e) { try { el.setPointerCapture(e.pointerId); } catch (_) { /* no live pointer */ } }
 
+  // Shared friendly bee art.
+  function drawBee(c, x, y, size, t) {
+    c.save(); c.translate(x, y); c.scale(size / 32, size / 32);
+    c.fillStyle = 'rgba(218,250,255,.8)';
+    const flap = .55 + Math.abs(Math.sin((t || 0) * 25)) * .45;
+    for (const [x, a] of [[-4, -.5], [6, .5]]) { c.beginPath(); c.ellipse(x, -10, 7, 11 * flap, a, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = '#ffc943'; c.beginPath(); c.ellipse(0, 0, 15, 11, 0, 0, Math.PI * 2); c.fill();
+    c.save(); c.beginPath(); c.ellipse(0, 0, 15, 11, 0, 0, Math.PI * 2); c.clip();
+    c.fillStyle = '#302f38'; c.fillRect(-9, -12, 4, 24); c.fillRect(-1, -12, 4, 24); c.restore();
+    c.fillStyle = '#302f38'; circle(c, 9, -2, 2.3);
+    c.strokeStyle = '#302f38'; c.lineWidth = 1.5; c.beginPath(); c.arc(10, 2, 3, 0, 1.5); c.stroke(); c.restore();
+  }
+  function drawFlower(c, x, y, size, color) {
+    c.save(); c.translate(x, y); c.scale(size / 24, size / 24);
+    c.strokeStyle = '#287c53'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
+    c.fillStyle = color || '#fff4d0';
+    for (let i = 0; i < 6; i++) circle(c, Math.cos(i * Math.PI / 3) * 7, Math.sin(i * Math.PI / 3) * 7, 5);
+    c.fillStyle = '#ffb52e'; circle(c, 0, 0, 5); c.restore();
+  }
+  function drawHive(c, x, y, size) {
+    c.save(); c.translate(x, y); c.scale(size / 48, size / 48);
+    for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#e4a52a' : '#ffcc55'; rr(c, -20 + i * 3, 10 - i * 8, 40 - i * 6, 13, 7); }
+    c.fillStyle = '#674221'; circle(c, 0, 13, 6); c.restore();
+  }
+
   window.BotKit = {
     C, PLATING, DISPLAY, BODY, font,
     rand, randi, pick, clamp, lerp, dist, shuffle, overlap,
     shade, alpha,
     rrPath, rr, circle, ring, text,
     gear, nut, bolt, battery, chip, bomb, hazard, bgFactory, vignette, layer,
-    drawBot, botCanvas, particles, shaker, capture
+    drawBot, drawBee, drawFlower, drawHive, botCanvas, particles, shaker, capture
   };
 })();

@@ -131,7 +131,7 @@
   }
 
   Arcade.register({
-    id: 'robo-pong',
+    id: 'robo-pong', length: 'Quick matches · first to 5',
     title: 'Robo Pong',
     cat: 'versus',
     blurb: 'Out-rally PONG-O-TRON, a robot that upgrades every match.',

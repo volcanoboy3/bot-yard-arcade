@@ -382,13 +382,13 @@
       <div>
         <p class="kicker">Bay 07 · Game floor</p>
         <h1 class="wordmark" id="wordmark"><span class="line">Bot Yard</span><span class="line line-2">Arcade</span></h1>
-        <p class="lede">Twenty robot games on one factory floor. <b>Build your bot</b>, then play. It shows up in every game marked <b>Stars your bot</b>.</p>
+        <p class="lede">Robots, bees, and a whole world of games. Quick matches or adventures that keep growing. <b>Build your bot</b>, then play. It shows up in every game marked <b>Stars your bot</b>.</p>
         <div class="hero-actions">
-          <a class="btn primary big" href="#scrap-yard-bot" id="hero-first">Play Scrap Yard Bot</a>
+          <a class="btn primary big" href="#honey-island" id="hero-first">Explore Honey Island</a>
           <button type="button" class="btn ghost big" id="hero-random">Surprise me</button>
         </div>
         <ul class="hero-stats" aria-label="Arcade stats">
-          <li><b id="stat-games">20</b><span>Games</span></li>
+          <li><b id="stat-games">23</b><span>Games</span></li>
           <li><b id="stat-you">0</b><span>Star your bot</span></li>
           <li><b id="stat-records">0</b><span>High scores set</span></li>
         </ul>
@@ -425,7 +425,7 @@
       <div class="floor-head">
         <div>
           <h2 id="floor-title">The game floor</h2>
-          <p id="floor-note">Pick a machine. The green light means you have played it.</p>
+          <p id="floor-note">Try Honey Island for a long adventure, the Factory for 100 upgrades, or Bee Volley for quick rounds. The green light means you have played.</p>
         </div>
         <div class="filters" id="filters" role="group" aria-label="Filter games"></div>
       </div>
@@ -433,7 +433,7 @@
     </section>
 
     <footer class="site-foot">
-      <span><b>Bot Yard Arcade</b> · 20 games, 5 kinds, 1 robot that is yours.</span>
+      <span><b>Bot Yard Arcade</b> · 23 games · robots & bees · quick rounds and big adventures.</span>
       <span>Press Esc to pause a game. Your browser's Back button returns here.</span>
     </footer>
   </div>
@@ -473,6 +473,8 @@
 
 <script src="js/kit.js"></script>
 <script src="js/engine.js"></script>
+<script src="js/bee-economy.js"></script>
+<script src="js/island-model.js"></script>
 <!-- games: each file registers itself with Arcade.register(...) -->
 <script src="js/games/scrap-yard-bot.js"></script>
 <script src="js/games/robo-runner.js"></script>
@@ -494,6 +496,9 @@
 <script src="js/games/bot-match.js"></script>
 <script src="js/games/type-zapper.js"></script>
 <script src="js/games/robot-factory.js"></script>
+<script src="js/games/honey-island.js"></script>
+<script src="js/games/bee-volley.js"></script>
+<script src="js/games/nectar-derby.js"></script>
 <script src="js/hub.js"></script>
 </body>
 </html>

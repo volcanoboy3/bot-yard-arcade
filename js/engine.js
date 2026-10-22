@@ -743,8 +743,9 @@
     if (!view) return;
     const st = history.state;
     if (st && st.botyard === view.def.id) {
+      const leavingView = view;
       history.back();
-      setTimeout(() => { if (view) forceHub(); }, 300);
+      setTimeout(() => { if (view === leavingView) forceHub(); }, 300);
     } else forceHub();
   };
   function forceHub() {

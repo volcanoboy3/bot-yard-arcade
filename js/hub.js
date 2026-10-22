@@ -7,10 +7,11 @@
 
   // Curated floor order: categories interleave so the first screen shows variety.
   const ORDER = [
+    'honey-island', 'bee-volley', 'robot-factory', 'nectar-derby', 'robo-pong',
     'scrap-yard-bot', 'robo-runner', 'code-the-bot', 'bot-invaders', 'flappy-drone',
     'bot-2048', 'laser-dodge', 'connect-bot', 'brick-bot', 'circuit-connect',
     'battery-snake', 'rock-paper-robot', 'scrap-stacker', 'copy-bot', 'whack-a-bot',
-    'bomb-squad', 'robo-pong', 'bot-match', 'type-zapper', 'robot-factory'
+    'bomb-squad', 'bot-match', 'type-zapper'
   ];
   const rank = def => { const i = ORDER.indexOf(def.id); return i < 0 ? 999 : i; };
   const games = A.games.slice().sort((a, b) => rank(a) - rank(b));
@@ -77,6 +78,7 @@
           def.usesPlayer ? el('span', { class: 'you' }, 'Stars your bot') : null),
         el('h3', null, def.title),
         el('p', null, def.blurb || ''),
+        def.length ? el('small', { style: { color: '#f5cf7a', fontWeight: '700' } }, def.length) : null,
         el('div', { class: 'plate-foot' }, best, el('span', { class: 'go', html: 'Play ' + GO }))));
     node.style.setProperty('--accent', def.accent || kit.C.safety);
     grid.append(node);
@@ -132,7 +134,7 @@
 
   // ---------- hero buttons ----------
   const first = $('hero-first');
-  if (A.byId['scrap-yard-bot']) first.addEventListener('click', openGame('scrap-yard-bot'));
+  if (A.byId['honey-island']) first.addEventListener('click', openGame('honey-island'));
   else first.hidden = true;
   $('hero-random').addEventListener('click', () => {
     const unplayed = games.filter(g => !A.plays(g.id));

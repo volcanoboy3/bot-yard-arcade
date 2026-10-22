@@ -1,38 +1,24 @@
 /* Robot Factory: an idle clicker.
  * Assemble robots by hand, spend them on machines that build robots for you, and watch
  * the factory floor fill up. Progress is saved, and the factory keeps working for up to
- * an hour while you are away. It never ends: the score is every robot you have ever built. */
+ * eight hours while you are away. It never ends: the score is every robot you have ever built. */
 (function () {
   'use strict';
   const K = window.BotKit;
   const C = K.C;
   const W = 800, H = 360, BELT = 292, STATION = 400;
-  const OFFLINE_CAP = 3600;   // seconds of work the factory does while you are away
+  const OFFLINE_CAP = 8 * 3600;   // seconds of work the factory does while you are away
   const GROWTH = 1.15;
 
-  const MACHINES = [
-    { id: 'arm',    name: 'Robot Arm',     cost: 15,       rate: 0.1,  desc: 'Bolts parts together' },
-    { id: 'belt',   name: 'Conveyor Belt', cost: 100,      rate: 1,    desc: 'Keeps parts rolling' },
-    { id: 'line',   name: 'Assembly Line', cost: 1100,     rate: 8,    desc: 'Stamps out robot bodies' },
-    { id: 'weld',   name: 'Welding Bay',   cost: 12000,    rate: 47,   desc: 'Welds frames in a flash' },
-    { id: 'boss',   name: 'AI Foreman',    cost: 130000,   rate: 260,  desc: 'Runs the whole floor' },
-    { id: 'fusion', name: 'Fusion Plant',  cost: 1400000,  rate: 1400, desc: 'Endless clean power' },
-    { id: 'nano',   name: 'Nano Swarm',    cost: 20000000, rate: 7800, desc: 'Tiny bots build big bots' }
-  ];
-  const TOOLS = [
-    { id: 'glove',  name: 'Power Glove',       cost: 100,     unlock: 30,      mult: 2, desc: '×2 robots per tap' },
-    { id: 'driver', name: 'Turbo Screwdriver', cost: 750,     unlock: 400,     mult: 2, desc: '×2 robots per tap' },
-    { id: 'rivet',  name: 'Rivet Blaster',     cost: 12000,   unlock: 6000,    mult: 3, desc: '×3 robots per tap' },
-    { id: 'hammer', name: 'Mega Hammer',       cost: 200000,  unlock: 100000,  mult: 3, desc: '×3 robots per tap' },
-    { id: 'wrench', name: 'Quantum Wrench',    cost: 3000000, unlock: 1500000, pct: 0.05, desc: 'Each tap adds 5% of per sec' }
-  ];
+  const MACHINES = BeeEconomy.machines;
+  const TOOLS = BeeEconomy.tools;
   const MILESTONES = [10, 100, 1000, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12];
   const HEADS = ['box', 'dome', 'tv'], ANTS = ['ball', 'bolt', 'twin', 'dish', 'none'];
   const BASES = ['wheels', 'treads', 'legs', 'hover'], EYES = ['#bff6ff', '#9dff9d', '#ffd36b', '#ff9ad5'];
   const ARM_X = [180, 292, 520, 616];
 
   // ---------- numbers: 1,240 · 12.3K · 3.4M ----------
-  const UNITS = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc'];
+  const UNITS = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td'];
   function fmt(n) {
     n = Math.floor(Math.max(0, n) + 1e-7);
     if (n < 10000) return n.toLocaleString('en-US');
@@ -317,7 +303,7 @@
   .g-rf .rf-assemble:active, .g-rf .rf-assemble.is-press { transform: translateY(3px); box-shadow: 0 2px 0 #a88404; }
   .g-rf .rf-assemble.is-hint { animation: rf-pulse 1.2s ease-in-out infinite; }
   @keyframes rf-pulse { 50% { box-shadow: 0 5px 0 #a88404, 0 0 0 7px rgba(245,197,24,.3); } }
-  .g-rf .rf-shop { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: #172733; border: 2px solid #223845; border-radius: 14px; padding: 10px; display: grid; gap: 8px; align-content: start; }
+  .g-rf .rf-shop { flex: 1; min-height: 0; overflow: auto; touch-action: pan-y; overscroll-behavior: contain; background: #172733; border: 2px solid #223845; border-radius: 14px; padding: 10px; display: grid; gap: 8px; align-content: start; }
   .g-rf .rf-h { margin: 2px 2px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font: 700 11px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: #8b9aa6; }
   .g-rf .rf-h span + span { letter-spacing: .04em; text-transform: none; font-weight: 500; font-size: 12px; color: #6f8796; }
   .g-rf .rf-tools, .g-rf .rf-machines { display: grid; gap: 8px; }
@@ -336,7 +322,7 @@
   .g-rf .rf-info small { font: 500 12.5px/1.25 var(--body); color: #aebdc6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .g-rf .rf-item:disabled .rf-info small { color: #8b9aa6; }
   .g-rf .rf-side { display: grid; justify-items: end; gap: 5px; }
-  .g-rf .rf-cost { font: 700 15px/1 var(--body); color: #f5c518; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .g-rf .rf-cost { font: 700 15px/1 var(--body); color: #f5c518; white-space: normal; max-width: 125px; text-align: right; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .g-rf .rf-item:disabled .rf-cost { color: #ff8a5c; }
   .g-rf .rf-own { font: 400 13px/1 var(--display); color: #5ad1e6; white-space: nowrap; }
   .g-rf .rf-own.is-new { font: 700 10.5px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: #7cf08a; }
@@ -395,13 +381,14 @@
   }
 
   Arcade.register({
-    id: 'robot-factory',
-    title: 'Robot Factory',
+    id: 'robot-factory', length: 'Long clicker · 100 permanent upgrades',
+    title: 'Robot & Bee Factory',
     cat: 'builder',
-    blurb: 'Build robots, buy machines, grow a giant factory.',
+    blurb: 'A huge saved clicker: 100 upgrades, robot armies and honey-powered bees.',
     rules: [
       'Tap Assemble (or the factory floor) to build robots. Robots are your money.',
-      'Spend them on machines that build robots for you, even while you are away.',
+      'Buy 100 permanent upgrades and 12 machine types. Bee helpers make honey for special research.',
+      'Your factory saves here and works for up to 8 hours while you are away.',
       'Tap your own bot when it rolls by as the flagship model for a bonus.'
     ],
     how: 'Tap Assemble or the floor · Space builds · 1 to 7 buy',
@@ -414,6 +401,7 @@
       ctx.translate((w - W * s) / 2, 0);
       ctx.scale(s, s);
       sceneThumb(ctx, 0.35, player);
+      K.drawHive(ctx, 660, 230, 90); K.drawBee(ctx, 590, 130, 60, .3);
       const say = (txt, x, y, col, size) => {
         ctx.font = K.font(size); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
         ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(8,14,20,0.9)'; ctx.strokeText(txt, x, y);
@@ -431,18 +419,19 @@
       const player = api.player;
 
       // ---------- saved state ----------
-      const fresh = () => ({ v: 1, bank: 0, total: 0, clicks: 0, owned: {}, tools: [], seen: [], ms: 0, flags: 0, savedAt: Date.now() });
+      const fresh = () => ({ v: 2, honey: 0, totalHoney: 0, bank: 0, total: 0, clicks: 0, owned: {}, tools: [], seen: [], ms: 0, flags: 0, savedAt: Date.now() });
       function load() {
         const raw = api.load(null), d = fresh();
         if (raw && typeof raw === 'object') {
           const num = v => (typeof v === 'number' && isFinite(v) && v >= 0 ? v : 0);
           d.bank = num(raw.bank); d.total = Math.max(num(raw.total), d.bank);
+          d.honey = num(raw.honey); d.totalHoney = Math.max(d.honey, num(raw.totalHoney));
           d.clicks = num(raw.clicks); d.flags = num(raw.flags);
           d.ms = Math.min(MILESTONES.length, Math.floor(num(raw.ms)));
           d.savedAt = num(raw.savedAt) || Date.now();
           for (const m of MACHINES) d.owned[m.id] = Math.floor(num(raw.owned && raw.owned[m.id]));
           const ok = id => TOOLS.some(t => t.id === id);
-          d.tools = Array.isArray(raw.tools) ? raw.tools.filter(ok) : [];
+          d.tools = Array.isArray(raw.tools) ? [...new Set(raw.tools.filter(ok))] : [];
           d.seen = Array.isArray(raw.seen) ? raw.seen.filter(ok) : [];
         }
         for (const m of MACHINES) d.owned[m.id] = d.owned[m.id] || 0;
@@ -452,14 +441,12 @@
       const save = () => { D.savedAt = Date.now(); api.save(D); };
 
       const owned = id => D.owned[id] || 0;
+      const rateOf = m => BeeEconomy.rates([m], { owned: { [m.id]: 1 }, tools: D.tools }, TOOLS).robots;
       const costOf = m => Math.ceil(m.cost * Math.pow(GROWTH, owned(m.id)));
-      let R = 0;
-      function recalc() { R = 0; for (const m of MACHINES) R += owned(m.id) * m.rate; }
-      function clickPower() {
-        let p = 1, pct = 0;
-        for (const t of TOOLS) if (D.tools.indexOf(t.id) >= 0) { if (t.mult) p *= t.mult; if (t.pct) pct += t.pct; }
-        return p + pct * R;
-      }
+      let R = 0, honeyRate = 0;
+      function recalc() { const r = BeeEconomy.rates(MACHINES, D, TOOLS); R = r.robots; honeyRate = r.honey; }
+      function clickPower() { return BeeEconomy.tapPower(D, TOOLS, R); }
+      function gainHoney(n) { D.honey += n; D.totalHoney += n; }
       recalc();
 
       // ---------- DOM ----------
@@ -472,13 +459,15 @@
       const clickLine = el('small', null, '');
       const assembleBtn = el('button', { type: 'button', class: 'rf-assemble' }, el('span', null, 'Assemble'), clickLine);
       const panel = el('div', { class: 'rf-panel' }, el('div', { class: 'rf-bank' }, el('span', null, 'Robots'), bankNum, rateLine), assembleBtn);
-      const toolsHead = el('p', { class: 'rf-h' }, el('span', null, 'Tools'), el('span', null, 'one-time boosts'));
+      const honeyLine = el('p', { class: 'rf-hint', role: 'status' });
+      const progressLine = el('p', { class: 'rf-hint' });
+      const toolsHead = el('p', { class: 'rf-h' }, el('span', null, 'Research'), el('span', null, '100 permanent upgrades'));
       const toolsBox = el('div', { class: 'rf-tools' });
       const toolHint = el('p', { class: 'rf-hint' });
       const machBox = el('div', { class: 'rf-machines' });
       const resetBox = el('div', { class: 'rf-reset' });
       const shop = el('div', { class: 'rf-shop' },
-        toolsHead, toolsBox, toolHint,
+        honeyLine, progressLine, toolsHead, toolsBox, toolHint,
         el('p', { class: 'rf-h' }, el('span', null, 'Machines'), el('span', null, 'build robots for you')),
         machBox, resetBox);
       const root = el('div', { class: 'g-rf' }, el('div', { class: 'rf-main' }, scene, panel), shop);
@@ -499,17 +488,17 @@
         const cost = el('span', { class: 'rf-cost' });
         const own = el('span', { class: 'rf-own' });
         const btn = el('button', { type: 'button', class: 'rf-item' },
-          iconCanvas(ICONS[m.id]), el('span', { class: 'rf-info' }, name, desc), el('span', { class: 'rf-side' }, cost, own));
-        if (!api.isTouch) btn.append(el('kbd', { class: 'rf-key', 'aria-hidden': 'true' }, String(i + 1)));
+          iconCanvas(ICONS[m.id] || (c => { K.drawHive(c, 22, 23, 34); K.drawBee(c, 31, 10, 14, 0); })), el('span', { class: 'rf-info' }, name, desc), el('span', { class: 'rf-side' }, cost, own));
+        if (!api.isTouch && i < 7) btn.append(el('kbd', { class: 'rf-key', 'aria-hidden': 'true' }, String(i + 1)));
         api.on(btn, 'click', e => { buyMachine(m); releaseFocus(btn, e); });
         machBox.append(btn);
         return { m, btn, name, desc, cost, own, state: '', lastCost: -1, lastOwn: -1 };
       });
       const toolRows = TOOLS.map(t => {
         const btn = el('button', { type: 'button', class: 'rf-item is-tool', hidden: true },
-          iconCanvas(TOOL_ICONS[t.id]), el('span', { class: 'rf-info' }, el('b', null, t.name), el('small', null, t.desc)),
-          el('span', { class: 'rf-side' }, el('span', { class: 'rf-cost' }, fmt(t.cost))));
-        btn.title = t.name + ': ' + (t.mult ? 'every tap builds ' + t.mult + ' times as many robots.' : 'every tap also adds 5% of your robots per second.');
+          iconCanvas(TOOL_ICONS[t.id] || (c => K.drawBee(c, 22, 24, 32, 0))), el('span', { class: 'rf-info' }, el('b', null, t.name), el('small', null, t.desc)),
+          el('span', { class: 'rf-side' }, el('span', { class: 'rf-cost' }, fmt(t.cost) + (t.honeyCost ? ' + ' + fmt(t.honeyCost) + ' honey' : ''))));
+        btn.title = t.name + ': ' + t.desc;
         api.on(btn, 'click', e => { buyTool(t); releaseFocus(btn, e); });
         toolsBox.append(btn);
         return { t, btn };
@@ -608,6 +597,7 @@
       function assemble(x, y, viaButton) {
         const n = clickPower();
         gain(n);
+        gainHoney(Math.max(1, n * .01));
         D.clicks++;
         say('+' + fmtGain(n), x + K.rand(-12, 12), y, C.safety, n >= 1000 ? 30 : 26);
         fx.burst(x, y + 12, [C.safety, '#ffffff', C.glow], 7, 170, { gravity: 420, size: 3.2, life: 0.5 });
@@ -630,18 +620,20 @@
         recalc();
         api.sfx('coin');
         const first = D.owned[m.id] === 1;
-        const spot = { arm: [ARM_X[Math.min(3, D.owned.arm - 1)], 130], belt: [400, 200], line: [STATION, 110], weld: [694, 180], boss: [96, 120], fusion: [716, 76], nano: [400, 150] }[m.id];
+        const spot = { arm: [ARM_X[Math.min(3, D.owned.arm - 1)], 130], belt: [400, 200], line: [STATION, 110], weld: [694, 180], boss: [96, 120], fusion: [716, 76], nano: [400, 150] }[m.id] || [580, 130];
         fx.burst(spot[0], spot[1], [C.safety, C.glow, '#ffffff'], first ? 26 : 12, first ? 280 : 180, { gravity: 300 });
-        say(first ? 'NEW MACHINE!' : '+' + fmtRate(m.rate) + '/s', spot[0], spot[1] - 20, first ? C.good : C.glow, first ? 24 : 20, 1.2);
+        say(first ? 'NEW MACHINE!' : '+' + fmtRate(rateOf(m)) + '/s', spot[0], spot[1] - 20, first ? C.good : C.glow, first ? 24 : 20, 1.2);
         api.stat('Per sec', fmtRate(R));
         save();
         refreshTop(); refreshShop(true);
       }
       function buyTool(t) {
         if (D.tools.indexOf(t.id) >= 0 || D.total < t.unlock) return;
-        if (D.bank < t.cost) { api.sfx('error'); return; }
-        D.bank -= t.cost;
+        if (D.bank < t.cost || D.honey < (t.honeyCost || 0)) { api.sfx('error'); return; }
+        D.bank -= t.cost; D.honey -= t.honeyCost || 0;
         D.tools.push(t.id);
+        recalc();
+        api.stat('Per sec', fmtRate(R));
         api.sfx('power');
         say(t.name.toUpperCase() + '!', STATION, 120, C.glow, 24, 1.3);
         fx.burst(STATION, 150, [C.glow, C.safety, '#ffffff'], 24, 260, { gravity: 250 });
@@ -663,7 +655,7 @@
       }
       function showNotice(n, capped) {
         const parts = [el('b', null, 'Welcome back! '), 'While you were away your factory built ' + fmt(n) + (Math.floor(n) === 1 ? ' robot.' : ' robots.')];
-        if (capped) parts.push(el('small', null, 'It can work on its own for up to one hour.'));
+        if (capped) parts.push(el('small', null, 'It can work on its own for up to eight hours.'));
         noticeText.replaceChildren(...parts);
         notice.hidden = false;
         if (S.noticeOff) S.noticeOff();
@@ -672,6 +664,7 @@
       }
       api.on(noticeBtn, 'click', e => { notice.hidden = true; releaseFocus(noticeBtn, e); });
       function awayGain(sec) {
+        gainHoney(honeyRate * Math.min(sec, OFFLINE_CAP));
         const n = R * Math.min(sec, OFFLINE_CAP);
         if (!(n > 0)) return;
         gain(n);
@@ -681,6 +674,9 @@
       // ---------- readouts ----------
       let lastBank = '', lastRate = '', lastClick = '';
       function refreshTop() {
+        honeyLine.textContent = 'Honey: ' + fmt(D.honey) + ' · ' + fmtRate(honeyRate) + '/sec · Taps gather nectar too';
+        progressLine.textContent = 'Research ' + D.tools.length + '/100 · ' + (D.tools.length === 100 ? 'Royal colony complete! Keep growing.' : 'More research unlocks as you build.');
+        api.stat('Upgrades', D.tools.length + '/100');
         const b = fmt(D.bank);
         if (b !== lastBank) { bankNum.textContent = b; lastBank = b; }
         const r = R > 0 ? fmtRate(R) + ' per second' : 'No machines yet';
@@ -707,8 +703,8 @@
               r.lastCost = -1; r.lastOwn = -1;
             } else if (state === 'open') {
               r.name.textContent = m.name;
-              r.desc.textContent = m.desc + ' · +' + fmtRate(m.rate) + '/s';
-              r.btn.title = m.name + ': each one builds ' + fmtRate(m.rate) + (m.rate === 1 ? ' robot' : ' robots') + ' per second.';
+              r.desc.textContent = m.desc + ' · +' + fmtRate(rateOf(m)) + '/s';
+              r.btn.title = m.name + ': each one builds ' + fmtRate(rateOf(m)) + (rateOf(m) === 1 ? ' robot' : ' robots') + ' per second.';
             }
           }
           if (state === 'open') {
@@ -724,14 +720,14 @@
           tr.btn.hidden = !open;
           if (open) {
             avail++;
-            tr.btn.disabled = D.bank < t.cost;
-            if (D.seen.indexOf(t.id) < 0) { D.seen.push(t.id); api.toast('New tool!', { color: C.glow }); api.sfx('power'); }
+            tr.btn.disabled = D.bank < t.cost || D.honey < (t.honeyCost || 0);
+            if (D.seen.indexOf(t.id) < 0) { D.seen.push(t.id); api.toast('New research available!', { color: C.glow }); api.sfx('power'); }
           } else if (!have && !next) next = t;
         }
         toolsHead.hidden = !avail && !next;
         toolsBox.hidden = !avail;
         toolHint.hidden = !next || avail > 0;
-        if (next && !avail) toolHint.textContent = 'Next tool unlocks at ' + fmt(next.unlock) + ' robots built.';
+        if (next) { toolHint.hidden = false; toolHint.textContent = 'Next research: ' + next.name + ' at ' + fmt(next.unlock) + ' robots built.'; }
       }
 
       // ---------- input ----------
@@ -762,6 +758,7 @@
         }
       });
       api.on(document, 'visibilitychange', () => { if (document.hidden) save(); });
+      api.on(window, 'pagehide', save);
 
       // ---------- update + draw ----------
       function update(dt) {
@@ -871,6 +868,10 @@
           ctx.fillStyle = C.safety;
           ctx.beginPath(); ctx.moveTo(f.x - 8, y + hh + 3); ctx.lineTo(f.x + 8, y + hh + 3); ctx.lineTo(f.x, y + hh + 12); ctx.closePath(); ctx.fill();
         }
+        const bees = Math.min(12, 2 + Math.floor(D.tools.length / 10) + owned('hive'));
+        for (let i = 0; i < bees; i++) K.drawBee(ctx, 100 + ((i * 119 + t * 33) % 600), 95 + Math.sin(t * 2 + i) * 25, 24, t + i);
+        K.drawHive(ctx, 748, 258, 54);
+        for (let i = 0; i < 5; i++) K.drawFlower(ctx, 52 + i * 27, 329, 18, i % 2 ? '#ffc1dc' : '#fff4cf');
         fx.draw(ctx);
         drawSays();
         if (D.total < 10) {
@@ -898,7 +899,7 @@
         S.wall = now;
         if (!(real >= 0)) real = 0;
         if (real > 2) awayGain(real);         // paused or tab hidden: the factory kept working
-        else gain(R * real);
+        else { gain(R * real); gainHoney(honeyRate * real); }
         update(dt);
         render();
         S.uiT -= dt;

@@ -2,17 +2,17 @@
   'use strict';
   window.mountBeeShop=function (root,A,preview) {
     const M=BeeWardrobe,el=A.el,shop=A.wardrobe;
-    let state=shop.snapshot(),tab='paint',selected='paint-0',busy=false,eraser=false,painting=false,lastCell=null;
+    let state=shop.snapshot(),tab='character',selected='costume-bee',busy=false,eraser=false,painting=false,lastCell=null;
     let pixels=Array(256).fill(null),history=[];
     const summary=el('p',{class:'bs-summary'}),tabs=el('div',{class:'bs-tabs',role:'tablist','aria-label':'Robot customisation'}),items=el('div',{class:'bs-items paints',role:'tabpanel'});
     const title=el('strong'),detail=el('p'),buy=el('button',{type:'button',class:'bs-buy'}),status=el('p',{class:'bs-status',role:'status'});
     const selection=el('div',{class:'bs-selection'},title,detail,buy);
     const fair=el('p',{class:'bs-fair'},'Bee deliveries arrive at random after about 20–35 seconds of active play. No coins for idle time, menus or offline factories. Coins and owned items save in this browser.');
-    const notice=el('p',{class:'bs-note'},'Free preview · Owned items are free to equip again');
+    const notice=el('p',{class:'bs-note'},'Preview character skins · Owned items equip free');
     const repair=el('button',{class:'bs-tool',type:'button',hidden:true},'Repair coin save');
     root.append(summary,tabs,notice,items,selection,status,repair,fair);
     const tabButtons=[];
-    for(const [id,label] of [['paint','50 paints'],['shape','Shapes'],['accessory','Accessories'],['parts','Parts'],['name','Name'],['draw','Draw paint']]) {
+    for(const [id,label] of [['character','Skins'],['paint','50 paints'],['shape','Shapes'],['accessory','Accessories'],['parts','Parts'],['name','Name'],['draw','Draw paint']]) {
       const b=el('button',{type:'button',role:'tab','aria-selected':'false'},label);
       b.addEventListener('click',()=>{tab=id;renderItems();});tabs.append(b);tabButtons.push({id,b});
     }
@@ -20,6 +20,7 @@
     function previewItem(item){
       const p={...basePlayer(),...(item?item.patch:{})};
       if(item&&item.slot==='paint')p.paintPixels=null;
+      if(item&&(['paint','head','shell','antenna','base'].includes(item.slot)))p.costume='robot';
       preview(p);
     }
     async function act(fn){
@@ -35,7 +36,7 @@
       if(tab==='draw') {
         const art=M.drawing(pixels),owned=art&&state.customs?.some(x=>x.pixels.every((c,i)=>c===art.pixels[i]));title.textContent='Your own robot paint';detail.textContent=art?art.colors+(art.colors===1?' colour · ':' colours · ')+art.price+' coins · More colours and detail cost more.':'Draw on the 16×16 canvas. Use up to 32 colours. Your price appears before you buy.';
         buy.textContent=owned?'Equip drawing · owned':art?'Unlock my drawing · '+art.price+' coins':'Draw something first';buy.disabled=!usable||!art||(!owned&&state.balance<art.price);
-        preview({...basePlayer(),pattern:'custom',paintPixels:pixels});return;
+        preview({...basePlayer(),costume:'robot',pattern:'custom',paintPixels:pixels});return;
       }
       if(tab==='name') {
         title.textContent='Give your robot a name';detail.textContent='Changing the name costs 20 coins. Letters, numbers, spaces and hyphens; up to 14 characters.';
@@ -45,7 +46,7 @@
       if(!item){title.textContent='Choose something to preview';detail.textContent='Every colour, shape and accessory has a price.';buy.disabled=true;buy.textContent='Choose an item';return;}
       const owned=state.owned?.includes(item.id);
       title.textContent=item.name+' · '+item.tier;
-      detail.textContent=owned?'You own this. Equip it whenever you like.':'Preview only. Unlock to wear this in your games.';
+      detail.textContent=item.category==='character'?(item.value==='robot'?'Your classic robot, with your own paint and parts.':item.name+' changes your whole character, including its shape and colours. Accessories can still be added.'):(owned?'You own this. Equip it whenever you like.':'Preview only. Unlock to wear this in your games.');
       buy.textContent=owned?'Equip · owned':'Unlock & equip · '+item.price+' coins';
       buy.disabled=!usable||(!owned&&state.balance<item.price);
       items.querySelectorAll('[data-item]').forEach(b=>{b.classList.toggle('selected',b.dataset.item===selected);const owned=!!state.owned?.includes(b.dataset.item);b.classList.toggle('owned',owned);b.setAttribute('aria-pressed',String(b.dataset.item===selected));const item=M.byId[b.dataset.item];b.setAttribute('aria-label',item.name+', '+item.tier+', '+(owned?'owned':item.price+' coins'));b.querySelector('.bs-price').textContent=owned?'Owned':M.byId[b.dataset.item].price+' coins';});
@@ -53,7 +54,7 @@
     }
     function renderItems(){
       tabButtons.forEach(({id,b})=>b.setAttribute('aria-selected',String(tab===id)));
-      items.replaceChildren();items.className='bs-items'+(tab==='paint'?' paints':'');
+      items.replaceChildren();items.className='bs-items'+(tab==='paint'?' paints':tab==='character'?' characters':'');
       items.style.display=tab==='draw'||tab==='name'?'block':'';
       if(tab==='name') {
         const input=el('input',{class:'bs-name',maxLength:14,value:basePlayer().name,'aria-label':'New robot name',autocomplete:'off',spellcheck:false});
@@ -63,9 +64,9 @@
         const list=M.catalogue.filter(x=>x.category===tab);
         if(!list.some(x=>x.id===selected)) selected=list[0]?.id;
         for(const item of list) {
-          const visual=item.slot==='paint'?el('span',{class:'bs-swatch',style:{'--c':item.patch.body},'aria-hidden':'true'}):el('span',null,({shape:'⬡',accessory:'✿',parts:'⚙'})[item.category]);
+          const visual=item.category==='character'?el('canvas',{class:'bs-character',width:120,height:130,'aria-hidden':'true'}):item.slot==='paint'?el('span',{class:'bs-swatch',style:{'--c':item.patch.body},'aria-hidden':'true'}):el('span',null,({shape:'⬡',accessory:'✿',parts:'⚙'})[item.category]);
           const b=el('button',{type:'button',class:'bs-item',dataset:{item:item.id,tier:item.tier},'aria-label':item.name+', '+item.tier+', '+(state.owned?.includes(item.id)?'owned':item.price+' coins')},visual,el('span',null,item.name),el('span',{class:'bs-price'},state.owned?.includes(item.id)?'Owned':item.price+' coins'));
-          b.addEventListener('click',()=>{selected=item.id;renderSelection();});if(item.slot==='paint')b.querySelector('.bs-swatch').style.setProperty('--c',item.patch.body);items.append(b);
+          b.addEventListener('click',()=>{selected=item.id;renderSelection();});if(item.slot==='paint')b.querySelector('.bs-swatch').style.setProperty('--c',item.patch.body);if(item.category==='character'){const c=visual.getContext('2d');BotKit.drawBot(c,60,70,93,{...M.defaults,costume:item.value,t:.4,shadow:true});}items.append(b);
         }
       }
       renderSelection();

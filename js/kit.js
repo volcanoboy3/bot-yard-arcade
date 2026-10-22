@@ -496,6 +496,7 @@
       c.beginPath(); c.ellipse(0, 50.5, 30, 4.5, 0, 0, Math.PI * 2); c.fill();
     }
     costumeBack(c,o,t);
+    if(window.CharacterSkins && CharacterSkins.draw(c,o,t)) {costumeFront(c,o,t);c.restore();return;}
     botBase(c, o, t, body);
     const bob = o.base === 'hover' ? Math.sin(t * 4) * 2 - 2 : (o.walk && o.base === 'legs' ? -Math.abs(Math.sin(t * 12)) * 1.5 : 0);
     c.translate(0, bob);

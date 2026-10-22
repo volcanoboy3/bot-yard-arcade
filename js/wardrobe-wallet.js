@@ -32,7 +32,7 @@
       if(!envelope || !Array.isArray(envelope.signature) || envelope.signature.length!==32 || !envelope.signature.every(n=>Number.isInteger(n)&&n>=0&&n<=255) || !M.valid(envelope.data)) throw Error('Your coin save could not be verified.');
       const okay=await crypto.subtle.verify('HMAC',key,new Uint8Array(envelope.signature),encoder.encode(JSON.stringify(envelope.data)));
       if(!okay) throw Error('Your coin save was changed outside the game.');
-      return envelope.data;
+      return M.migrate(envelope.data);
     }
     async function write(d) {
       if(!M.valid(d)) throw Error('The coin transaction was not valid.');

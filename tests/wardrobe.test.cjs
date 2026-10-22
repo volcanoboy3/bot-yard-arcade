@@ -30,3 +30,13 @@ test('guard ignores scripts, allows human input and held keys, and pauses fast a
 test('score checks allow ordinary play and large clicker totals but reject impossible scores',()=>{
  assert.ok(M.plausibleScore('robo-runner',1000,45));assert.ok(M.plausibleScore('robot-factory',1e30,2));assert.ok(!M.plausibleScore('robot-factory',Infinity,2));assert.ok(!M.plausibleScore('robo-runner',1e50,2));assert.ok(!M.plausibleScore('honey-island',226,100));
 });
+test('full character skins are paid looks, separate from the 50 paints',()=>{
+ const skins=M.catalogue.filter(x=>x.category==='character');assert.equal(skins.length,21);assert.equal(M.catalogue.filter(x=>x.category==='paint').length,50);
+ const d=M.fresh();assert.equal(M.purchase(d,'costume-bee').ok,false);d.balance=d.earned=1000;assert.ok(M.purchase(d,'costume-bee').ok);assert.equal(d.player.costume,'bee');assert.equal(d.balance,915);assert.ok(M.valid(d));
+ const before=d.balance;assert.ok(M.purchase(d,'costume-bee').ok);assert.equal(d.balance,before);M.purchase(d,'paint-0');assert.equal(d.player.costume,'robot');M.purchase(d,'costume-bee');assert.equal(d.balance,before);
+});
+test('old signed wallet payloads migrate without losing coins, gear or drawings',()=>{
+ const d=M.fresh();d.earned=d.balance=512;M.purchase(d,'head-tv');delete d.player.costume;d.owned=d.owned.filter(x=>!x.startsWith('costume-'));const owned=d.owned.slice(),balance=d.balance;
+ assert.ok(M.valid(d));const migrated=M.migrate(d);assert.equal(migrated.balance,balance);assert.equal(migrated.player.head,'tv');assert.equal(migrated.player.costume,'robot');assert.ok(owned.every(id=>migrated.owned.includes(id)));assert.ok(M.valid(migrated));
+ migrated.player.costume='queen-bee';assert.equal(M.valid(migrated),false);
+});

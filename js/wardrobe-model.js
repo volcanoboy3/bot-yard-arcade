@@ -15,6 +15,15 @@
     '#6451a3','#55c6b6','#b7c6fa','#c9c3df','#ffd476','#30aa7d','#d14463','#458bf0','#a450d2','#f8d176'];
   const catalogue = colors.map((body, i) => ({ id: 'paint-' + i, category: 'paint', slot: 'paint', name: names[i], tier: tiers[Math.floor(i / 10)], price: i === 0 ? 0 : prices[Math.floor(i / 10)], value: String(i), patch: { body, pattern: ['solid','stripes','petals','honeycomb','royal'][Math.floor(i / 10)], customPaint: null } }));
   function group(category, slot, values) { values.forEach(([value, name, price, tier]) => catalogue.push({ id: slot + '-' + value, category, slot, value, name, price, tier: tier || (price >= 300 ? 'Royal' : price >= 100 ? 'Rare' : 'Garden'), patch: { [slot]: value } })); }
+  group('character','costume',[
+    ['robot','Classic Robot',0],['bee','Bumblebee',85],['queen-bee','Queen Bee',450],
+    ['hive','Walking Beehive',220],['ladybug','Ladybug',120],['butterfly','Butterfly',250],
+    ['cat','Cat Bot',150],['fox','Fox Bot',190],['bear','Honey Bear',160],['frog','Frog Bot',130],
+    ['bunny','Bunny Bot',160],['panda','Panda Bot',220],['dragon','Dragon Bot',650],
+    ['dinosaur','Dino Bot',320],['flower','Sunflower Bot',200],['mushroom','Mushroom Bot',190],
+    ['astronaut','Astronaut',400],['knight','Honey Knight',450],['pirate','Pirate Bot',300],
+    ['wizard','Bee Wizard',500],['cactus','Cactus Bot',220]
+  ]);
   group('shape','head',[['box','Box head',0],['dome','Dome head',75],['tv','Screen head',140],['hex','Honeycomb head',320]]);
   group('shape','shell',[['box','Classic body',0],['round','Round body',95],['hex','Hexagon body',240]]);
   group('parts','antenna',[['ball','Signal ball',0],['bolt','Lightning antenna',65],['twin','Bee feelers',100],['dish','Satellite dish',140],['none','No antenna',0]]);
@@ -25,7 +34,7 @@
   group('accessory','face',[['none','No glasses',0],['goggles','Bee goggles',100],['shades','Royal shades',280]]);
   group('accessory','badge',[['none','No badge',0],['bee','Bee friend badge',60],['flower','Flower badge',75],['star','Royal star',300]]);
   const byId = Object.fromEntries(catalogue.map(x => [x.id, x]));
-  const defaults = { name:'BOLT-7', body:colors[0], pattern:'solid', customPaint:null, head:'box', shell:'box', antenna:'ball', base:'wheels', eye:'#bff6ff', hat:'none', back:'none', face:'none', badge:'none' };
+  const defaults = { costume:'robot', name:'BOLT-7', body:colors[0], pattern:'solid', customPaint:null, head:'box', shell:'box', antenna:'ball', base:'wheels', eye:'#bff6ff', hat:'none', back:'none', face:'none', badge:'none' };
   const cleanName = name => String(name || '').toUpperCase().replace(/[^A-Z0-9 -]/g,'').slice(0,14).trim();
   function fresh(legacy) {
     const d = { v:1, earned:0, spent:0, balance:0, owned:catalogue.filter(x => !x.price).map(x => x.id), customs:[], player:{...defaults}, lastRewardAt:0, created:Date.now(), revision:0 };
@@ -53,8 +62,13 @@
     if (!p || cleanName(p.name) !== p.name || !p.name) return false;
     const paint = p.customPaint ? d.customs.find(x => x.id === p.customPaint) : catalogue.find(x => x.slot === 'paint' && x.patch.body === p.body && x.patch.pattern === p.pattern && d.owned.includes(x.id));
     if (!paint) return false;
+    if(p.costume!==undefined&&!catalogue.some(x=>x.slot==='costume'&&x.value===p.costume&&d.owned.includes(x.id)))return false;
     for (const slot of ['head','shell','antenna','base','eye','hat','back','face','badge']) if (!catalogue.some(x => x.slot === slot && x.value === p[slot] && d.owned.includes(x.id))) return false;
     return true;
+  }
+  function migrate(d) {
+    if(d.player.costume===undefined){d.player.costume='robot';if(!d.owned.includes('costume-robot'))d.owned.push('costume-robot');}
+    return d;
   }
   function purchase(d, id) {
     const item = byId[id]; if (!item) return { ok:false, message:'Unknown item.' };
@@ -62,7 +76,9 @@
     if (d.balance < price) return { ok:false, message:'Play to earn '+(price-d.balance)+' more coins.' };
     d.balance -= price; d.spent += price;
     if (!owned) d.owned.push(id);
-    Object.assign(d.player,item.patch); return { ok:true, message:owned ? item.name+' equipped!' : item.name+' unlocked and equipped!' };
+    Object.assign(d.player,item.patch);
+    if(item.slot==='paint'||['head','shell','antenna','base'].includes(item.slot))d.player.costume='robot';
+    return { ok:true, message:owned ? item.name+' equipped!' : item.name+' unlocked and equipped!' };
   }
   function rename(d, name) {
     name = cleanName(name);
@@ -78,7 +94,7 @@
     if (d.customs.length >= 40) return { ok:false, message:'Your 40 custom paint slots are full.' };
     if (d.balance < art.price) return { ok:false, message:'This drawing costs '+art.price+' coins. Keep playing!' };
     const item = { id:'custom-'+d.customs.length, pixels:art.pixels };
-    d.customs.push(item); d.spent += art.price; d.balance -= art.price; Object.assign(d.player,{customPaint:item.id,pattern:'custom'});
+    d.customs.push(item); d.spent += art.price; d.balance -= art.price; Object.assign(d.player,{customPaint:item.id,pattern:'custom',costume:'robot'});
     return { ok:true, message:'Your own paint unlocked and equipped!' };
   }
   function equipDrawing(d, id) { const item = d.customs.find(x => x.id === id); if (!item) return {ok:false,message:'Drawing not owned.'}; Object.assign(d.player,{customPaint:id,pattern:'custom'}); return {ok:true,message:'Custom paint equipped!'}; }
@@ -115,7 +131,7 @@
     if(id==='honey-island')return n<=225;
     return n<=Math.max(50000,Math.max(0,seconds)*20000);
   }
-  const model={plausibleScore,catalogue,byId,tiers,defaults,fresh,valid,purchase,rename,drawing,buyDrawing,equipDrawing,InputGuard,cleanName};
+  const model={migrate,plausibleScore,catalogue,byId,tiers,defaults,fresh,valid,purchase,rename,drawing,buyDrawing,equipDrawing,InputGuard,cleanName};
   for(const item of catalogue){Object.freeze(item.patch);Object.freeze(item);}
   Object.freeze(catalogue);Object.freeze(byId);Object.freeze(defaults);Object.freeze(tiers);Object.freeze(InputGuard.prototype);Object.freeze(model);
   if(typeof module==='object'&&module.exports) module.exports=model; else Object.defineProperty(root,'BeeWardrobe',{value:model});

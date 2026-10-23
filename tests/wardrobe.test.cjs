@@ -40,3 +40,13 @@ test('old signed wallet payloads migrate without losing coins, gear or drawings'
  assert.ok(M.valid(d));const migrated=M.migrate(d);assert.equal(migrated.balance,balance);assert.equal(migrated.player.head,'tv');assert.equal(migrated.player.costume,'robot');assert.ok(owned.every(id=>migrated.owned.includes(id)));assert.ok(M.valid(migrated));
  migrated.player.costume='queen-bee';assert.equal(M.valid(migrated),false);
 });
+test('purchased animal and fantasy skins become robot replacements without a charge',()=>{
+ const pairs={ladybug:'sentry',butterfly:'bee-drone',cat:'scout',fox:'racer',bear:'builder',frog:'spring',bunny:'radar',panda:'repair',dragon:'titan',dinosaur:'tank',flower:'solar',mushroom:'saucer',astronaut:'orbit',knight:'guardian',pirate:'salvage',wizard:'quantum',cactus:'crane'};
+ for(const [old,replacement]of Object.entries(pairs)){
+  const d=M.fresh();d.earned=1000;d.spent=400;d.balance=600;d.owned.push('costume-'+old);d.player.costume=old;
+  assert.ok(M.valid(d),old);M.migrate(d);assert.equal(d.player.costume,replacement);assert.ok(d.owned.includes('costume-'+replacement));assert.ok(!d.owned.includes('costume-'+old));assert.equal(d.balance,600);assert.equal(d.spent,400);assert.ok(M.valid(d));assert.ok(M.purchase(d,'costume-'+replacement).ok);assert.equal(d.balance,600);
+ }
+ const unowned=M.fresh();unowned.player.costume='cat';assert.equal(M.valid(unowned),false);
+ const duplicate=M.fresh();duplicate.owned.push('costume-cat','costume-scout');duplicate.player.costume='cat';M.migrate(duplicate);assert.equal(duplicate.owned.filter(id=>id==='costume-scout').length,1);assert.ok(M.valid(duplicate));
+ assert.ok(M.catalogue.filter(x=>x.category==='character').every(x=>!Object.keys(pairs).includes(x.value)));
+});

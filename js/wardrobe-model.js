@@ -17,13 +17,17 @@
   function group(category, slot, values) { values.forEach(([value, name, price, tier]) => catalogue.push({ id: slot + '-' + value, category, slot, value, name, price, tier: tier || (price >= 300 ? 'Royal' : price >= 100 ? 'Rare' : 'Garden'), patch: { [slot]: value } })); }
   group('character','costume',[
     ['robot','Classic Robot',0],['bee','Bumblebee',85],['queen-bee','Queen Bee',450],
-    ['hive','Walking Beehive',220],['ladybug','Ladybug',120],['butterfly','Butterfly',250],
-    ['cat','Cat Bot',150],['fox','Fox Bot',190],['bear','Honey Bear',160],['frog','Frog Bot',130],
-    ['bunny','Bunny Bot',160],['panda','Panda Bot',220],['dragon','Dragon Bot',650],
-    ['dinosaur','Dino Bot',320],['flower','Sunflower Bot',200],['mushroom','Mushroom Bot',190],
-    ['astronaut','Astronaut',400],['knight','Honey Knight',450],['pirate','Pirate Bot',300],
-    ['wizard','Bee Wizard',500],['cactus','Cactus Bot',220]
+    ['hive','Hive Robot',220],['sentry','Sentry Robot',120],['bee-drone','Bee Drone',250],
+    ['scout','Scout Robot',150],['racer','Racer Robot',190],['builder','Builder Robot',160],['spring','Spring Robot',130],
+    ['radar','Radar Robot',160],['repair','Repair Robot',220],['titan','Titan Mech',650],
+    ['tank','Tank Robot',320],['solar','Solar Robot',200],['saucer','Saucer Robot',190],
+    ['orbit','Orbital Robot',400],['guardian','Hive Guardian',450],['salvage','Salvage Robot',300],
+    ['quantum','Quantum Robot',500],['crane','Crane Robot',220]
   ]);
+  // Read-only aliases preserve signed purchases from the earlier skin collection.
+  const oldCostumes = Object.freeze({ladybug:'sentry',butterfly:'bee-drone',cat:'scout',fox:'racer',bear:'builder',frog:'spring',bunny:'radar',panda:'repair',dragon:'titan',dinosaur:'tank',flower:'solar',mushroom:'saucer',astronaut:'orbit',knight:'guardian',pirate:'salvage',wizard:'quantum',cactus:'crane'});
+  const costumeValue = value => Object.prototype.hasOwnProperty.call(oldCostumes,value) ? oldCostumes[value] : value;
+  const canonicalId = id => typeof id==='string' && id.startsWith('costume-') ? 'costume-'+costumeValue(id.slice(8)) : id;
   group('shape','head',[['box','Box head',0],['dome','Dome head',75],['tv','Screen head',140],['hex','Honeycomb head',320]]);
   group('shape','shell',[['box','Classic body',0],['round','Round body',95],['hex','Hexagon body',240]]);
   group('parts','antenna',[['ball','Signal ball',0],['bolt','Lightning antenna',65],['twin','Bee feelers',100],['dish','Satellite dish',140],['none','No antenna',0]]);
@@ -57,16 +61,18 @@
   }
   function valid(d) {
     if (!d || d.v !== 1 || ![d.earned,d.spent,d.balance,d.revision,d.lastRewardAt,d.created].every(n => Number.isSafeInteger(n) && n >= 0) || d.earned > 1e8 || d.balance !== d.earned-d.spent || d.balance < 0) return false;
-    if (!Array.isArray(d.owned) || new Set(d.owned).size !== d.owned.length || d.owned.some(id => !byId[id]) || !Array.isArray(d.customs) || d.customs.length > 40 || d.customs.some((x,i) => x.id !== 'custom-'+i || !drawing(x.pixels))) return false;
+    if (!Array.isArray(d.owned) || new Set(d.owned).size !== d.owned.length || d.owned.some(id => typeof id!=='string'||!Object.prototype.hasOwnProperty.call(byId,canonicalId(id))) || !Array.isArray(d.customs) || d.customs.length > 40 || d.customs.some((x,i) => x.id !== 'custom-'+i || !drawing(x.pixels))) return false;
     const p = d.player;
     if (!p || cleanName(p.name) !== p.name || !p.name) return false;
     const paint = p.customPaint ? d.customs.find(x => x.id === p.customPaint) : catalogue.find(x => x.slot === 'paint' && x.patch.body === p.body && x.patch.pattern === p.pattern && d.owned.includes(x.id));
     if (!paint) return false;
-    if(p.costume!==undefined&&!catalogue.some(x=>x.slot==='costume'&&x.value===p.costume&&d.owned.includes(x.id)))return false;
+    if(p.costume!==undefined&&!catalogue.some(x=>x.slot==='costume'&&x.value===costumeValue(p.costume)&&d.owned.some(id=>canonicalId(id)===x.id)))return false;
     for (const slot of ['head','shell','antenna','base','eye','hat','back','face','badge']) if (!catalogue.some(x => x.slot === slot && x.value === p[slot] && d.owned.includes(x.id))) return false;
     return true;
   }
   function migrate(d) {
+    d.owned=[...new Set(d.owned.map(canonicalId))];
+    if(d.player.costume!==undefined)d.player.costume=costumeValue(d.player.costume);
     if(d.player.costume===undefined){d.player.costume='robot';if(!d.owned.includes('costume-robot'))d.owned.push('costume-robot');}
     return d;
   }
